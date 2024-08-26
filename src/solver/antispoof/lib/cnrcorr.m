@@ -6,14 +6,19 @@ function sdres = cnrcorr(cnrs, keys, cfg)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if(nargin < 2 || isempty(cfg))
         cfg = struct();
-        cfg.NumAccum=10;
+        cfg.ObsRate=10;
+        warning("cnrcorr: no cfg input, obs rate set to default(%dHz).", cfg.ObsRate);
+        cfg.TAccum=1.0;
         cfg.NumPoll=1;
-        cfg.Step=10;
+        cfg.TStep=1.0;
         cfg.Thresh=0.5;
     end
-    sdres.name = 'CNR Correlation';
-    N = cfg.NumAccum;   assert(isscalar(N) && N >= 3);
-    K = cfg.NumPoll;    assert(isscalar(K) && K >= 1);
+    sdres = struct("name", 'CNRCorr', 'alarm', NaN, 'T', NaN, 'gamma', NaN);
+    N = round(cfg.TAccum*cfg.ObsRate);   
+    Nstep = round(cfg.ObsRate*cfg.TStep);
+    assert(isscalar(N) && N >= 3);
+    K = cfg.NumPoll;    
+    assert(isscalar(K) && K >= 1);
     
     %% Observable accumulation
     persistent i; % function counter
@@ -31,11 +36,10 @@ function sdres = cnrcorr(cnrs, keys, cfg)
     cnr_arr{i+1} = cnrs;
     key_arr(2:end) = key_arr(1:end-1);
     key_arr{i+1} = keys;
-    i = mod(i+1, N);
+    i = mod(ig, Nstep);
     ig = ig + 1;
-    
-    sdres.alarm = nan; sdres.T = nan; sdres.gamma = nan;
-    if(ig < N || i<cfg.Step-1)
+
+    if(ig < N || i<Nstep-1)
         return;
     end
 
@@ -43,13 +47,11 @@ function sdres = cnrcorr(cnrs, keys, cfg)
     ikeys = key_arr{1};
     for n = 2:N
         if(length(key_arr{n}) < 4)
-            sdres.alarm = 0; sdres.T = nan; sdres.gamma = nan;
             return;
         end
         ikeys = intersect(ikeys, key_arr{n});
     end
     if(length(ikeys) < 2)
-        sdres.alarm = nan; sdres.T = nan; sdres.gamma = nan;
         return;
     end
 
@@ -68,7 +70,7 @@ function sdres = cnrcorr(cnrs, keys, cfg)
     cross_corr = U(U ~= 0);
     sdres.T = abs(mean(cross_corr));
     sdres.gamma = cfg.Thresh;
-
+    
     %% Output filtering
     persistent alarm_p;
     if(K ~= length(alarm_p))

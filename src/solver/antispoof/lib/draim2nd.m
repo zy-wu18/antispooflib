@@ -8,13 +8,16 @@ function sdres = draim2nd(drho, ps, vs, cfg)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if(nargin < 3 || isempty(cfg))
         cfg = struct();
-        cfg.NumAccum= 4;
-        cfg.NumPoll = 5;
-        cfg.Pfa = 1e-3;
+        cfg.ObsRate=10;
+        cfg.NumAccum=1.0;
+        cfg.NumPoll=5;
+        cfg.Pfa=1e-3;
     end
-    sdres.name = 'DRAIM2nd';
-    N = cfg.NumAccum;   assert(isscalar(N) && N >= 3);
-    K = cfg.NumPoll;    assert(isscalar(K) && K >= 1);
+    sdres = struct("name", 'DRAIM2nd', 'alarm', NaN, 'T', NaN, 'gamma', NaN);
+    N = round(cfg.TAccum*cfg.ObsRate);   
+    assert(isscalar(N) && N >= 3);
+    K = cfg.NumPoll;    
+    assert(isscalar(K) && K >= 1);
 
     %% Observable accumulation
     [~, ~, ~, ~, ~, drhor, H7] = lse7pnt(drho, ps, vs);
@@ -35,7 +38,6 @@ function sdres = draim2nd(drho, ps, vs, cfg)
     i = mod(i+1, N);
 
     if(mod(i, N)~= 0 || min(M_arr) <= 7)
-        sdres.alarm = nan; sdres.T = nan; sdres.gamma = nan;
         return;
     end
     

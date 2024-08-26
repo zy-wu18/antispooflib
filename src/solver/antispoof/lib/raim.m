@@ -7,14 +7,18 @@ function sdres = raim(rho, ps, cfg)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if(nargin < 3 || isempty(cfg))
         cfg = struct();
-        cfg.NumAccum= 1;
-        cfg.NumPoll = 1;
-        cfg.Pfa = 1e-3;
-        cfg.Sigma2 = 300;
+        cfg.ObsRate=10;
+        warning("cnrcorr: no cfg input, obs rate set to default(%dHz).", cfg.ObsRate);
+        cfg.TAccum=0.1;
+        cfg.NumPoll=1;
+        cfg.Pfa=1e-3;
+        cfg.Sigma2=300;
     end
-    sdres.name = 'RAIM';
-    N = cfg.NumAccum;   assert(isscalar(N) && N >= 1);
-    K = cfg.NumPoll;    assert(isscalar(K) && K >= 1);
+    sdres = struct("name", 'RAIM', 'alarm', NaN, 'T', NaN, 'gamma', NaN);
+    N = round(cfg.TAccum*cfg.ObsRate);   
+    assert(isscalar(N) && N >= 1);
+    K = cfg.NumPoll;    
+    assert(isscalar(K) && K >= 1);
 
     %% Observable accumulation
     [~, ~, ~, ~, rhor, ~, ~] = lse4pnt(rho, rho+nan, ps, ps+nan);
@@ -31,7 +35,6 @@ function sdres = raim(rho, ps, cfg)
     i = mod(i+1, N);
 
     if(mod(i, N)~= 0 || min(M_arr) <= 4)
-        sdres.alarm = nan; sdres.T = nan; sdres.gamma = nan;
         return;
     end
 
@@ -54,4 +57,5 @@ function sdres = raim(rho, ps, cfg)
     alarm_t = any(sdres.T > sdres.gamma);
     alarm_p = [alarm_t, alarm_p(1:end-1)];
     sdres.alarm = (sum(alarm_p) >= length(alarm_p)/2);
+    
 end
