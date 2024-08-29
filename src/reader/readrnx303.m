@@ -64,9 +64,7 @@ function obs_seq = readrnx303(fname)
             for i = 1:sys2nobs(obs.Sys)
                 sname = idx2sname.(obs.Sys)(i);
                 obs.(idx2field.(obs.Sys)(i)) = str2double(line(4+((i*15-14):i*15)));
-                if(strcmp(idx2field.(obs.Sys)(i), 'Rho'))
-                    obs.SatTime = rec_t_gps_tow - obs.Rho/299792458;
-                end
+                obs.SatTime = rec_t_gps_tow;
                 obs.SigName = sname;
                 
                 if(i==sys2nobs(obs.Sys) || ~strcmp(sname, idx2sname.(obs.Sys)(i+1)))

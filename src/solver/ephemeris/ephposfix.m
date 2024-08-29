@@ -50,14 +50,15 @@ function [ps, vs, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pnt
     rhos = zeros(1, M);
     drhos= zeros(1, M);
     cnrs = zeros(1, M);
+    c = 2.99792458e8; % [m/s], speed of light
     
     for j = 1:M
         o = obs_pvt(j);
         key = sprintf("%c%02d", o.Sys, o.PRN);
         eph = eph_dict(key);
-        tsv = o.SatTime; % transmit time = tlatch - rho/c
+        tsv = o.SatTime - o.Rho/c; % transmit time = tlatch - rho/c
+        tsv = tsv - eph2clk(tsv, eph);
         [ps(:, j), vs(:, j), dts] = eph2pvt(tsv, eph);
-        c = 2.99792458e8; % [m/s], speed of light
         rhos(j) = o.Rho + dts*c;
         drhos(j)= -1.0*o.Fd/o.Fc*c;
         cnrs(j) = o.CNR;

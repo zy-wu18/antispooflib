@@ -19,12 +19,8 @@ function [ps, dts] = neph2pos(tsv, eph)
     I_dot= eph.I_dot;   TGD = eph.TGD;  WN      = eph.WN;       Toes    = eph.Toes;
 
     %% Begin to calculate satellite position/velocity
-    % Satellite clock bias fix, neph2clk
-    t_toc = tsv - toc; % t \approx tsv
-    dtsv = af0 + af1*t_toc + af2*t_toc.*t_toc; % Satellite clock-bias correction
-    t = tsv - dtsv; % satellite clock fixed
     % Kepler
-    tk = t - Toe; % ephemeris dead reaconing duration
+    tk = tsv - Toe; % ephemeris dead reaconing duration
     n = sqrt(mu./sqrt_a.^6) + Delta_n; % Average velocity
     Mk = M_0 + n.*tk;
     Ek1 = Mk; Ek = Ek1 - (Ek1 - e*sin(Ek1) - Mk)/(1 - e*cos(Ek1));
@@ -70,9 +66,9 @@ function [ps, dts] = neph2pos(tsv, eph)
     end
     
     % Satellite time
-    tk = t - toc;
+    tk = tsv - toc;
     dtsv = af0 + af1*tk + af2*tk.*tk;
-    dtr = F*e*sqrt_a*sin(Ek);
+    dtr = F*e*sqrt_a*sin(Ek); % relativity fix
     dts = dtsv + dtr;
 end
 
