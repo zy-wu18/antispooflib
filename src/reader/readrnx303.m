@@ -6,7 +6,7 @@ function obs_seq = readrnx303(fname)
     ftext = fileread(fname); % Read file content as characters
     L = sum((ftext == '>')); % Number of blocks
     obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'Fc', NaN, ... 
-        'Rho', NaN, 'SatTime', NaN, ...
+        'Rho', NaN, 'ObsTime', NaN, ...
         'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
     obs_seq = cell(1, L);
     logger.writeLine("%d data blocks detected.", L);
@@ -64,7 +64,7 @@ function obs_seq = readrnx303(fname)
             for i = 1:sys2nobs(obs.Sys)
                 sname = idx2sname.(obs.Sys)(i);
                 obs.(idx2field.(obs.Sys)(i)) = str2double(line(4+((i*15-14):i*15)));
-                obs.SatTime = rec_t_gps_tow;
+                obs.ObsTime = rec_t_gps_tow;
                 obs.SigName = sname;
                 
                 if(i==sys2nobs(obs.Sys) || ~strcmp(sname, idx2sname.(obs.Sys)(i+1)))

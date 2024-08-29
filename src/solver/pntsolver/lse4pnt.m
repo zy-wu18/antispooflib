@@ -39,7 +39,7 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts)
     while error_k>1e-5 && iter_cnt<iter_max
         for i = 1:M
             ps_i = ps(i, :);
-            H(i, 1:3) = -(ps_i - pu_k)/vecnorm(ps_i - pu_k);
+            H(i, 1:3) = -(ps_i-pu_k)/vecnorm(ps_i-pu_k);
             H(i, 4) = 1;
             r = vecnorm(ps_i-pu_k) + OMGE*(ps_i(1)*pu_k(2)-ps_i(2)*pu_k(1))/c;
             b(i) = (r + dtu_k - c*dts(i)) - rho(i);

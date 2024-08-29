@@ -69,6 +69,6 @@ function [ps, dts] = neph2pos(tsv, eph)
     tk = tsv - toc;
     dtsv = af0 + af1*tk + af2*tk.*tk;
     dtr = F*e*sqrt_a*sin(Ek); % relativity fix
-    dts = dtsv + dtr;
+    dts = dtsv + dtr - TGD;
 end
 

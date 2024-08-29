@@ -61,8 +61,8 @@ function fig_obs = plotobs(obs_seq, uobs_seq)
     nch = num_dict.numEntries;
     logger.writeLine("#detectedch=%d", nch);
     if(~isempty(uobs_seq{1}) && ~isempty(uobs_seq{end}))
-        tstart = uobs_seq{1}(1).SatTime;
-        tend = uobs_seq{end}(1).SatTime;
+        tstart = uobs_seq{1}(1).ObsTime;
+        tend = uobs_seq{end}(1).ObsTime;
         logger.writeLine("tstart=%.1f[TOW], tend=%.1f[TOW]", tstart, tend);
         logger.writeLine("duration=%.1f[sec], L=%d", tend-tstart, L);
     else
@@ -108,7 +108,7 @@ function fig_obs = plotobs(obs_seq, uobs_seq)
         az_d = az(~isnan(az(:, 1)), 1)/pi*180;
         el_d = el(~isnan(el(:, 1)), 1)/pi*180;
         grps = categorical({uobs_seq{1}.Sys}, {'G','R','J','S','E','C'});
-        if(~isempty(az_d))
+        if(~isempty(az_d) && all(and(el_d >= 0, el_d <= 90)))
             skyplot(az_d, el_d, marks, 'GroupData', grps, 'MarkerSizeData', 15, 'LabelFontSize',8);
         end
     subplot(2,3,6);
@@ -116,7 +116,7 @@ function fig_obs = plotobs(obs_seq, uobs_seq)
         az_d = az(~isnan(az(:, end)), end)/pi*180;
         el_d = el(~isnan(el(:, end)), end)/pi*180;
         grps = categorical({uobs_seq{end}.Sys}, {'G','R','J','S','E','C'});
-        if(~isempty(az_d))
+        if(~isempty(az_d) && all(and(el_d >= 0, el_d <= 90)))
             skyplot(az_d, el_d, marks, 'GroupData', grps, 'MarkerSizeData', 15, 'LabelFontSize',8);
         end
     logger.deStack("plotobs: finished plotting observables.");
