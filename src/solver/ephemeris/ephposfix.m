@@ -1,4 +1,4 @@
-function [ps, vs, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pntcfg, pu_ref)
+function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pntcfg, pu_ref)
 %EPHPOSFIX ephemeris positioning and measurement fix
 % args  :   1xM0 obs_t  obs_raw     a single raw observable frame
 %           dictionary  eph_dict    string->struct(neph_t, or geph_t) with
@@ -47,6 +47,7 @@ function [ps, vs, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pnt
     %% use ephemeris to calculate the PVT of selected satellites, #satu=M
     ps = zeros(3, M);
     vs = zeros(3, M);
+    dts = zeros(1, M);
     rhos = zeros(1, M);
     drhos= zeros(1, M);
     cnrs = zeros(1, M);
@@ -58,8 +59,8 @@ function [ps, vs, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pnt
         eph = eph_dict(key);
         tsv = o.SatTime - o.Rho/c; % transmit time = tlatch - rho/c
         tsv = tsv - eph2clk(tsv, eph);
-        [ps(:, j), vs(:, j), dts] = eph2pvt(tsv, eph);
-        rhos(j) = o.Rho + dts*c;
+        [ps(:, j), vs(:, j), dts(j)] = eph2pvt(tsv, eph);
+        rhos(j) = o.Rho;
         drhos(j)= -1.0*o.Fd/o.Fc*c;
         cnrs(j) = o.CNR;
         [obs_pvt(j).El, obs_pvt(j).Az] = satelaz(pu_ref, ps(:,j));

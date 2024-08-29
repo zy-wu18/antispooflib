@@ -71,11 +71,11 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
         logger.refreshBar(i, L);
         
         % Satellite position and observables fix
-        [ps, vs, rhos, drhos, cnrs, uobs_seq{i}] = ...
+        [ps, vs, dts, rhos, drhos, cnrs, uobs_seq{i}] = ...
             ephposfix(obs_seq{i}, eph_dict, pntcfg, lla2ecef(pntcfg.userLLA0));
         % PNT solver
         [pu, vu, dtu, ddtu] = ...
-            pntcfg.pntSolver(rhos', drhos', ps', vs', cnrs');
+            pntcfg.pntSolver(rhos', drhos', ps', vs', dts', cnrs');
         upvt_seq(i).Pos = pu';
         upvt_seq(i).Vel = vu';
         if(isempty(uobs_seq{i}))
@@ -89,7 +89,7 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
         % Spoofing detection result
         if(~isempty(ascfg.spfDetector))
             keys = arrayfun(@(c,p)sprintf("%c%02d",c,p), [uobs_seq{i}.Sys], [uobs_seq{i}.PRN]);
-            sdres = spoofdetect(rhos', drhos', ps', vs', cnrs', keys', ascfg.spfDetector);
+            sdres = spoofdetect(rhos',drhos',ps',vs',dts',cnrs',keys',ascfg.spfDetector);
             asres_seq(:, i) = sdres;
         end
     end

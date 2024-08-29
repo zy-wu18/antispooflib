@@ -1,4 +1,4 @@
-function sdres = spoofdetect(rhos, drhos, ps, vs, cnrs, keys, mthds)
+function sdres = spoofdetect(rhos, drhos, ps, vs, dts, cnrs, keys, mthds)
 % Spoof detector wrapper, with all available observables as input
 % args  :   1xM double  rho     [m], bias-fixed pseudorange observables
 %           1xM double  drho    [m/s], bias-fixed pseudorange-rate observables
@@ -14,6 +14,6 @@ function sdres = spoofdetect(rhos, drhos, ps, vs, cnrs, keys, mthds)
     
     for i = 1:nmthd
         sdmthd = mthds(i);
-        sdres(i) = sdmthd.detector(rhos, drhos, ps, vs, cnrs, keys, sdmthd.cfg);
+        sdres(i) = sdmthd.detector(rhos, drhos, ps, vs, dts, cnrs, keys, sdmthd.cfg);
     end
 end
