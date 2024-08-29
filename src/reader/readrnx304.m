@@ -141,7 +141,11 @@ function eph_dict = readrnx304(fname, t)
             else
                 eph_tmp.Health = v(2);
             end
-            eph_tmp.TGD = v(3);
+            if(any(eph_tmp.sys == 'EC'))
+                eph_tmp.TGD = [v(3), v(4)];
+            else
+                eph_tmp.TGD = v(3);
+            end
             fgetl(fid);
         elseif(any(char(eph_tmp.sys) == ['R' 'S']))
             eph_tmp.TauN = -1.0*v(9-length(sys_default)); % ! -TauN in [sec]

@@ -11,29 +11,15 @@ function [ps, vs, dts] = eph2pvt(tsv, eph)
 %           runge_katta_4 iterator.
 
     if any(eph.sys == ['G' 'E' 'J' 'C'])
-        [ps, dts] = neph2pos(tsv, eph);
+        [ps, dts] = neph2pt(tsv, eph);
         dt = 1e-3;
-        [ps1, ~ ] = neph2pos(tsv+dt, eph);
+        [ps1, ~ ] = neph2pt(tsv+dt, eph);
         vs = (ps1 - ps)/dt;
 
     elseif any(eph.sys == ['R' 'S'])
-        % Satellite clock bias fix
-        t_toc = tsv - eph.toe; % t \approx tsv
-        dtsv = -eph.TauN + eph.GammaN*t_toc; % Satellite clock-bias correction
-        t = tsv - dtsv; % satellite clock fixed
-        tk = t - eph.toe; % Time elapsed since ephemeris updated at Toe
-        
-        %% User Runge-Kutta (4th order) to solve GLONASS satellite PVT
-        p0  = 1e3*[eph.X; eph.Y; eph.Z];
-        dp0 = 1e3*[eph.Xvel; eph.Yvel; eph.Zvel];
-        ddp = 1e3*[eph.Xacc; eph.Yacc; eph.Zacc]; % Gravity field 2nd resonance
-        [ps, vs] = gephiter(p0, dp0, ddp, tk);
-    
-        %% Satellite time bias
-        dts = dtsv;
+        [ps, vs, dts] = geph2pvt(tsv, eph);
     else
         error("InvalidObservableType");
     end
-    
 end
 
