@@ -17,6 +17,7 @@ function fig_obs = plotobs(obs_seq, uobs_seq)
     cnr = zeros(256, L)+NaN; % Assumed max #channel
     az = zeros(256, L)+NaN;
     el = zeros(256, L)+NaN;
+    mark = repmat("", [256, L]);
     nsatv = zeros(5, L);
     nsatu = zeros(5, L);
     sys2num = dictionary('G',1,'R',2,'J',3,'E',4,'C',5);
@@ -56,6 +57,7 @@ function fig_obs = plotobs(obs_seq, uobs_seq)
             cnr(num_dict(key), i) = ou.CNR;
             az(num_dict(key), i) = ou.Az;
             el(num_dict(key), i) = ou.El;
+            mark(num_dict(key), i) = sprintf("%c%02d", ou.Sys, ou.PRN);
         end
     end
     nch = num_dict.numEntries;
@@ -71,7 +73,8 @@ function fig_obs = plotobs(obs_seq, uobs_seq)
     cnr = cnr(1:nch, :);
     az = az(1:nch, :);
     el = el(1:nch, :);
-    
+    mark = mark(1:nch, :);
+
     %% CNR vision
     subplot(4,3,[1,2,4,5]);
         cnr_min = min(min(cnr(cnr~=0)));
@@ -104,20 +107,20 @@ function fig_obs = plotobs(obs_seq, uobs_seq)
     
     %% Elevation and Azimuth angle -> skyplot vision
     subplot(2,3,3);
-        marks = cellfun(@(s,p)sprintf("%c%02d",s,p), {uobs_seq{1}.Sys}, {uobs_seq{1}.PRN});
+        mark_d = mark(~strcmp(mark(:, 1), ""), 1);
         az_d = az(~isnan(az(:, 1)), 1)/pi*180;
         el_d = el(~isnan(el(:, 1)), 1)/pi*180;
         grps = categorical({uobs_seq{1}.Sys}, {'G','R','J','S','E','C'});
         if(~isempty(az_d) && all(and(el_d >= 0, el_d <= 90)))
-            skyplot(az_d, el_d, marks, 'GroupData', grps, 'MarkerSizeData', 15, 'LabelFontSize',8);
+            skyplot(az_d, el_d, mark_d, 'GroupData', grps, 'MarkerSizeData', 15, 'LabelFontSize',8);
         end
     subplot(2,3,6);
-        marks = cellfun(@(s,p)sprintf("%c%02d",s,p), {uobs_seq{end}.Sys}, {uobs_seq{end}.PRN});
+        mark_d = mark(~strcmp(mark(:, end), ""), end);
         az_d = az(~isnan(az(:, end)), end)/pi*180;
         el_d = el(~isnan(el(:, end)), end)/pi*180;
         grps = categorical({uobs_seq{end}.Sys}, {'G','R','J','S','E','C'});
         if(~isempty(az_d) && all(and(el_d >= 0, el_d <= 90)))
-            skyplot(az_d, el_d, marks, 'GroupData', grps, 'MarkerSizeData', 15, 'LabelFontSize',8);
+            skyplot(az_d, el_d, mark_d, 'GroupData', grps, 'MarkerSizeData', 15, 'LabelFontSize',8);
         end
     logger.deStack("plotobs: finished plotting observables.");
 end
