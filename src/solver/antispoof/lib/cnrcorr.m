@@ -1,6 +1,7 @@
 function sdres = cnrcorr(cnrs, keys, cfg)
 % CNR correlation detector
 % args  :   1xM double  cnrs    [dBHz], carrier-to-noise ratio
+%           1xM string  keys    sprintf("%c%02d", sys, prn), e.g. 'G01'
 %           draimcfg_t  cfg     (optional)customized configuration
 % return:   sdres_t     sdres   name, alarm, test statistics and threshold
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

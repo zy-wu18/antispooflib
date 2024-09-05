@@ -75,13 +75,13 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
             ephposfix(obs_seq{i}, eph_dict, pntcfg, lla2ecef(pntcfg.userLLA0));
         % PNT solver
         [pu, vu, dtu, ddtu] = ...
-            pntcfg.pntSolver(rhos', drhos', ps', vs', dts', cnrs');
+            pntcfg.pntSolver(rhos', drhos', ps', vs', dts', cnrs', [uobs_seq{i}.Sys]);
         upvt_seq(i).Pos = pu';
         upvt_seq(i).Vel = vu';
         if(isempty(uobs_seq{i}))
             upvt_seq(i).Time = NaT;
         else
-            upvt_seq(i).Time = datetime(uobs_seq{i}(1).Time) + dtu;
+            upvt_seq(i).Time = datetime(uobs_seq{i}(1).Time) + dtu(1);
         end
         upvt_seq(i).Drift = ddtu;
         pntcfg.userLLA0 = ecef2lla(upvt_seq(max(i-1, 1)).Pos');

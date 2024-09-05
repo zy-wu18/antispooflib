@@ -1,6 +1,7 @@
-function sdres = raim(rho, ps, dts, cfg)
+function sdres = raim(rho, ps, dts, keys, cfg)
 % RAIM: Receiver autonomous intergrity monitoring with pseudo-range residue
 % args  :   1xM double  rho     [m], bias-fixed pseudorange observables
+%           1xM string  keys    sprintf("%c%02d", sys, prn), e.g. 'G01'
 %           3xM double  ps      [m], satellite position in ECEF
 %           raimcfg_t   cfg     (optional)customized configuration
 % return:   sdres_t     sdres   name, alarm, test statistics and threshold
@@ -21,7 +22,8 @@ function sdres = raim(rho, ps, dts, cfg)
     assert(isscalar(K) && K >= 1);
 
     %% Observable accumulation
-    [~, ~, ~, ~, rhor, ~, ~] = lse4pnt(rho, rho+nan, ps, ps+nan, dts);
+    keys = char(keys)';
+    [~, ~, ~, ~, rhor, ~, ~] = lse4pnt(rho, rho+nan, ps, ps+nan, dts, keys(1,:));
     persistent i; % thread counter
     persistent M_arr;
     persistent rhor_arr;
