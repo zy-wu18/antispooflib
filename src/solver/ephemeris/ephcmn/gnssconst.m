@@ -14,6 +14,9 @@ function [mu, o_dot_e, F] = gnssconst(sys)
         case {'G', 'J'}
             mu      = 3.986005e14;    
             o_dot_e = 7.2921151467e-5;
+        case 'R'
+            mu      = 3.9860044e14;
+            o_dot_e = 7.2921150e-5;
         otherwise
             mu      = 3.986005e14;    
             o_dot_e = 7.2921151467e-5;

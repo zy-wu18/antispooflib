@@ -17,7 +17,7 @@ function dt = eph2clk(tsv, eph)
         for i = 0:2
             t = ts - (-eph.TauN + eph.GammaN*t);
         end
-        dt = -eph.TauN + eph.GammaN;
+        dt = -eph.TauN + eph.GammaN*t;
     else
         warning('eph2clk: unknown system %s', sys);
         dt = nan;
