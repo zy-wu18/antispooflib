@@ -61,14 +61,16 @@ function obs_seq = readrnx303(fname)
             obs.Time = rec_t_utc;
             obs.Sys = line(1);
             obs.PRN = str2double(line(2:3));
+            line_bias = 4;
             for i = 1:sys2nobs(obs.Sys)
                 sname = idx2sname.(obs.Sys)(i);
-                obs.(idx2field.(obs.Sys)(i)) = str2double(line(4+((i*15-14):i*15)));
+                obs.(idx2field.(obs.Sys)(i)) = str2double(line(line_bias+((i*15-14):i*15)));
                 obs.ObsTime = rec_t_gps_tow;
                 obs.SigName = sname;
                 
                 if(i==sys2nobs(obs.Sys) || ~strcmp(sname, idx2sname.(obs.Sys)(i+1)))
                     obs.Fc = sname2fc(sname);
+                    line_bias = 8;
                     if(obs.Sys == 'R')
                         if(abs(obs.Fc-1602e6) < 1e-3)
                             obs.Fc = obs.Fc + glonass_slot(obs.PRN)*9e6/16;
