@@ -14,11 +14,12 @@ function eph_dict = readrnx304(fname, t)
     logger.enStack("readrnx304: Loading from %s.", fname);
     [~, ~, fext] = fileparts(fname);
     fid = fopen(fname);
-    if(strcmp(fext, '.rnx') || strcmp(fext, '.nav'))
+    line = fgetl(fid);
+    if(strcmp(fext, '.rnx') || contains(line, 'GNSS'))
         nav_fmt_l1 = "%c%d%d%d%d%d%d%d%lf%lf%lf"; % format of line 1
         nav_fmt_ln = "%lf%lf%lf%lf"; % format of line n > 1
         sys_default = '';
-    elseif(fext(end) == 'n') % GPS format
+    elseif(fext(end) == 'n' || contains(line, 'GPS')) % GPS format
         nav_fmt_l1 = "%d%d%d%d%d%d%lf%lf%lf%lf"; % format of line 1
         nav_fmt_ln = "%lf%lf%lf%lf"; % format of line n > 1
         sys_default = 'G';
