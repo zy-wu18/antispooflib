@@ -1,19 +1,24 @@
 function obs_seq = readnvlog(fname)
+    %% Initialization
+    logger = Logger();
+    logger.enStack("readnvlog: Loading from %s.", fname);
     flines = readlines(fname);
     
     nobs_max = 86400;
-    block_order = [1, nan, nan, nan, 3, nan]; % B1I first, then B3I.
-    block_sync = false;
+    blk_sig = [1, nan, nan, nan, 3, nan]; % blk_sig(i) = signal on the ith block
+    blk_sync = false; % whether the observables of 1st block is found
     
     obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'Fc', NaN, ... 
         'Rho', NaN, 'ObsTime', NaN, 'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
     obs_seq = cell(1, nobs_max);
-    nobs = 1;
+    n = 1;
     i = 1;
 
-    while i < length(flines) && nobs <= nobs_max
-        b = 1; % b = #obsevable_blocks
-        while b <= length(block_order) && i < length(flines)
+    %% File -> DBCHH blocks (# = nobs) -> DBCHN lines (# = mobs)
+    while i < length(flines) && n <= nobs_max
+        logger.refreshBar(i, length(flines));
+        b = 1; % reading the (b)th DBCH block of the (n)th frame
+        while b <= length(blk_sig) && i < length(flines)
             fline = regexprep(flines{i}, '\s', '');
             i = i + 1;
             
@@ -62,9 +67,9 @@ function obs_seq = readnvlog(fname)
                 fline = fline((lbias_chn+7):end);
                 vals = sscanf(fline, lformat);
                 
-                if ~block_sync
-                    if vals(field2idx("sig")) == block_order(b)
-                        block_sync = true;
+                if ~blk_sync % try block synchronization
+                    if vals(field2idx("sig")) == blk_sig(1)
+                        blk_sync = true;
                     else
                         continue;
                     end
@@ -78,37 +83,66 @@ function obs_seq = readnvlog(fname)
                 obs.Fd = vals(field2idx("doppler"));
                 obs.CNR = vals(field2idx("cn0"));
                 if(~isnan(obs.Rho) && obs.Rho>1 && ~isnan(obs.Sys))
-                    obs_seq{nobs} = insertobs(obs_seq{nobs}, obs); % append obs_seq
+                    obs_seq{n} = insertobs(obs_seq{n}, obs);
                 end
             end
-    
-            if(block_sync)
-                nobs = nobs + (b==length(block_order));
-                b = b + 1; % next block
+            
+            if(blk_sync)
+                if(b == length(blk_sig))
+                    i = i + 1; % skip 1 line $DBANT
+                    fline = regexprep(flines{i}, '\s', '');
+                    lbias_chn = strfind(fline, '$GNZDA');
+                    assert(~isempty(lbias_chn));
+                    fline = fline((lbias_chn+7):end);
+                    vals = sscanf(fline, '%02d%02d%02d.%02d,%d,%d,%d')';
+                    rec_t_utc = vals([7,6,5,1,2,3])+[zeros(1,5), vals(4)/100];
+                    i = i + 1;
+                    fline = regexprep(flines{i}, '\s', '');
+                    lbias_chn = strfind(fline, '$GNGGA');
+                    assert(~isempty(lbias_chn));
+                    fline = fline((lbias_chn+7):end);
+                    vals = sscanf(fline, '%02d%02d%02d.%02d,%lf,%c,%lf,%c,%d,%d,%f,%f,%c,%f,%c');
+                    if(rec_t_utc(1) >= 1980 && rec_t_utc(1) <= 2099)
+                        rec_t_gps = Utc2Gps(rec_t_utc);
+                        %rec_t_gps_wn = rec_t_gps(1);
+                        rec_t_gps_tow  = rec_t_gps(2) - LeapSeconds(rec_t_utc); % Leap seconds after year 2017
+                    else
+                        rec_t_gps_tow = nan;
+                    end
+                    for j = 1:length(obs_seq{n})
+                        obs_seq{n}(j).Time = rec_t_utc;
+                        obs_seq{n}(j).ObsTime = rec_t_gps_tow;
+                    end
+                    n = n + 1; % next frame
+                end
+                b = b + 1; % next block            
             end
         end
     end
-    obs_seq = obs_seq(1:(nobs-1));
+    obs_seq = obs_seq(1:(n-1));
+    logger.resetBar;
+    logger.writeLine("%d data blocks have been read successfully.", n-1);
+    logger.writeLine("Recorded from %s to %s;", datetime(obs_seq{1}(1).Time), datetime(obs_seq{end}(1).Time));
+    logger.writeLine("Maximum/Minimum #obs = %3d/%3d;", ...
+        max([cellfun(@(x) length(x), obs_seq)]), ...
+        min([cellfun(@(x) length(x), obs_seq)]));
+    logger.deStack("readnvlog: %d observations loaded.\n", n-1);
 end
 
-%% Parse NaVitech 'sig'
+
+%% Utils Parse NaVitech 'sig'
 function [sys, fc] = sig2sysfc(sig)
     switch(sig)
-        case 1
-            sys = 'B';
-            fc = 1561.098e6;
-        case 3
-            sys = 'B';
-            fc = 1268.52e6;
-        case 5
-            sys = 'G';
-            fc = 1575.42e6;
-        case 6
-            sys = 'B';
-            fc = 1575.42e6;
-        otherwise
-            sys = '?';
-            fc = nan;
+        case 1 % B1I
+            sys = 'B'; fc = 1561.098e6;
+        case 3 % B3I
+            sys = 'B'; fc = 1268.52e6;
+        case 5 % GPS L1 C/A
+            sys = 'G'; fc = 1575.42e6;
+        case 6 % B1C
+            sys = 'B'; fc = 1575.42e6;
+        otherwise % undefined
+            sys = '?'; fc = nan;
     end
 end
 
