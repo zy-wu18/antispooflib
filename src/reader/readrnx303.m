@@ -1,15 +1,13 @@
 function obs_seq = readrnx303(fname)
     logger = Logger();
     logger.enStack("readrnx303: Loading from %s.", fname);
-
+    nobs_max = 86400;
+    flines = readlines(fname); % Read file content as characters
+    
     %% Output initialization
-    ftext = fileread(fname); % Read file content as characters
-    L = sum((ftext == '>')); % Number of blocks
-    obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'Fc', NaN, ... 
-        'Rho', NaN, 'ObsTime', NaN, ...
-        'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
-    obs_seq = cell(1, L);
-    logger.writeLine("%d data blocks detected.", L);
+    obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'SigName', [], ... 
+        'ObsTime', NaN, 'Fc', NaN, 'Rho', NaN, 'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
+    obs_seq = cell(1, nobs_max);
     
     %% Skip the header of .obs file
     idx2sname = struct('G', [], 'R', [], 'E', [], 'J', [], 'C', [], 'S', []);
@@ -18,59 +16,61 @@ function obs_seq = readrnx303(fname)
     sys2nobs = dictionary('G', 0, 'R', 0, 'E', 0, 'J', 0, 'C', 0, 'S', 0);
     glonass_slot = zeros(1, 24);
 
-    fid = fopen(fname);
-    line = fgetl(fid);
-    while ~contains(line, 'END OF HEADER')
-        line = fgetl(fid);
-        assert(ischar(line));
-        if(contains(line, 'SYS / # / OBS TYPES'))
-            if(line(1) ~= ' ') % only read the first 16 observations
-                v = sscanf(line, '%c%d');
+    i = 1;
+    fline = flines{i};
+    while ~contains(fline, 'END OF HEADER') && i < length(flines)
+        fline = flines{i};
+        i = i + 1;
+        assert(ischar(fline));
+        if(contains(fline, 'SYS / # / OBS TYPES'))
+            if(fline(1) ~= ' ') % only read the first 16 observations
+                v = sscanf(fline, '%c%d');
                 sys = char(v(1));
-                ssegs = strsplit(regexprep(line(7:60), '^\s+|\s+$', ''));
+                ssegs = strsplit(regexprep(fline(7:60), '^\s+|\s+$', ''));
                 assert(v(2) == length(ssegs));
                 sys2nobs(sys) = v(2);
-                for i = 1:v(2)
-                    sseg = char(ssegs(i)); % e.g. 'S5Q'= strength of 5Q;
+                for j = 1:v(2)
+                    sseg = char(ssegs(j)); % e.g. 'S5Q'= strength of 5Q;
                     sname = [sys, sseg(2:3)]; % e.g. ['J', '5Q']->QZSS
                     idx2sname.(sys) = [idx2sname.(sys), string(sname)];
                     idx2field.(sys)= [idx2field.(sys), abbr2field(sseg(1))];
                 end
             end
-        elseif(contains(line, 'GLONASS SLOT / FRQ #'))
-            line = regexprep(line(1:60), 'R', '');
-            v = sscanf(line, '%d');
+        elseif(contains(fline, 'GLONASS SLOT / FRQ #'))
+            fline = regexprep(fline(1:60), 'R', '');
+            v = sscanf(fline, '%d');
             glonass_slot(v(2:2:end)) = v(3:2:end);
         end
     end
     
     %% Read data, block by block
-    idx = 0;
-    while ~feof(fid)
-        logger.refreshBar(idx, L);
-        line = fgetl(fid);
-        if line(1) == '>'
-            idx = idx+1;
-            line = line(2:end);
-            rec_t_utc = [sscanf(line, "%d%d%d%d%d%f", 6)]';
+    n = 0;
+    while i < length(flines) && n <= nobs_max
+        logger.refreshBar(i, length(flines));
+        fline = flines{i};
+        i = i + 1;
+        if fline(1) == '>'
+            n = n+1;
+            fline = fline(2:end);
+            rec_t_utc = [sscanf(fline, "%d%d%d%d%d%f", 6)]';
             rec_t_gps = Utc2Gps(rec_t_utc);
             %rec_t_gps_wn = rec_t_gps(1);
             rec_t_gps_tow  = rec_t_gps(2) - LeapSeconds(rec_t_utc); % Leap seconds after year 2017
-        elseif find(line(1) == ['G','R','E','J','C'], 1)
+        elseif find(fline(1) == ['G','R','E','J','C'], 1)
             obs = obs_t();
             obs.Time = rec_t_utc;
-            obs.Sys = line(1);
-            obs.PRN = str2double(line(2:3));
-            line_bias = 4;
-            for i = 1:sys2nobs(obs.Sys)
-                sname = idx2sname.(obs.Sys)(i);
-                obs.(idx2field.(obs.Sys)(i)) = str2double(line(line_bias+((i*15-14):i*15)));
+            obs.Sys = fline(1);
+            obs.PRN = str2double(fline(2:3));
+            lbias = 4;
+            for j = 1:sys2nobs(obs.Sys)
+                sname = idx2sname.(obs.Sys)(j);
+                obs.(idx2field.(obs.Sys)(j)) = str2double(fline(lbias+((j*15-14):j*15)));
                 obs.ObsTime = rec_t_gps_tow;
                 obs.SigName = sname;
                 
-                if(i==sys2nobs(obs.Sys) || ~strcmp(sname, idx2sname.(obs.Sys)(i+1)))
+                if(j==sys2nobs(obs.Sys) || ~strcmp(sname, idx2sname.(obs.Sys)(j+1)))
                     obs.Fc = sname2fc(sname);
-                    line_bias = 8;
+                    lbias = 8;
                     if(obs.Sys == 'R')
                         if(abs(obs.Fc-1602e6) < 1e-3)
                             obs.Fc = obs.Fc + glonass_slot(obs.PRN)*9e6/16;
@@ -78,19 +78,19 @@ function obs_seq = readrnx303(fname)
                             obs.Fc = obs.Fc + glonass_slot(obs.PRN)*7e6/16;
                         end
                     end
-                    obs_seq{idx} = [obs_seq{idx}, obs]; % append obs_seq
+                    obs_seq{n} = [obs_seq{n}, obs]; % append obs_seq
                 end
             end
         end
     end
+    obs_seq = obs_seq(1:n-1);
     logger.resetBar;
-    logger.writeLine("%d data blocks have been read successfully.", L);
+    logger.writeLine("%d data blocks have been read successfully.", n-1);
     logger.writeLine("Recorded from %s to %s;", datetime(obs_seq{1}(1).Time), datetime(obs_seq{end}(1).Time));
     logger.writeLine("Maximum/Minimum #obs = %3d/%3d;", ...
         max([cellfun(@(x) length(x), obs_seq)]), ...
         min([cellfun(@(x) length(x), obs_seq)]));
-    logger.deStack("readrnx303: %d observations loaded.\n", L);
-    fclose(fid);
+    logger.deStack("readrnx303 finished.\n");
 end
 
 function fc_arr = sname2fc(sname)

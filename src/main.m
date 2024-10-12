@@ -5,8 +5,17 @@ addpath(genpath('solver\'));
 
 try
     %% Load observation
-    [obsfname, obsfpath] = uigetfile('*.obs', "Choose RINEX observable file...", "../data/");
-    obs_seq = readrnx303([obsfpath, obsfname]);
+    [obsfname, obsfpath] = uigetfile({'*.obs'; '*.log'}, ...
+        "Choose RINEX observable file...", "../data/");
+    [~, ~, obsfext] = fileparts(obsfname);
+    switch(obsfext)
+        case '.obs'
+            obs_seq = readrnx303([obsfpath, obsfname]);
+        case '.log'
+            obs_seq = readnvlog([obsfpath, obsfname]);
+        otherwise
+            error('Read observation error. Unsupported extention (%s).', obsfext);
+    end
     if(isempty(obs_seq))
         error("InvalidObservables: %s", [obsfpath, obsfname]);
     end

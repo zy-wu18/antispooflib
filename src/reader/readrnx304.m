@@ -67,6 +67,10 @@ function eph_dict = readrnx304(fname, t)
         'R', repmat(duration_tol, [1, 26]), ...
         'S', repmat(duration_tol, [1, 60]));
     t = datetime(int32(t));
+    num_sys = zeros(1, 6);
+    logger.enStack("Searching closest ephemeris available, duration_tol=%s", duration_tol);
+    logger.setTable(["%3d", "%3d", "%3d", "%3d", "%3d", "%3d"], ...
+        ["G(GPS)", "C(BDS)", "J(QZSS)", "S(SBAS)", "E(Galileo)", "R(GLONASS)"]);
 
     while ~feof(fid)
         line = replace(fgetl(fid), "D", "e");
@@ -177,18 +181,24 @@ function eph_dict = readrnx304(fname, t)
         end
         key = sprintf("%c%02d", eph_tmp.sys, eph_tmp.PRN);
         eph_dict(key) = eph_tmp;
+        num_sys_last = num_sys;
+        num_sys = arrayfun(@(sys)sum(startsWith(eph_dict.keys, sys)), 'GCJSER')';
+        if(mod(sum(num_sys), 10) == 0 && any(num_sys_last ~= num_sys))
+            logger.refreshTable(num_sys);
+        end
     end
     fclose(fid);
-    logger.writeLine("Number of valid emphemeris: %d.", eph_dict.numEntries);
+    logger.deStack();
     assert(eph_dict.numEntries > 0, 'readrnx304:InvalidEph', ...
         sprintf("Ephemeris invalid:\n  nav time = %s;\n  obs time = %s.\n", eph_tmp.Toc_cal, t));
 
+    logger.enStack("readrnx304 report:");
     for sys = ['G', 'C', 'J', 'S', 'E', 'R']
         num_sys = sum(startsWith(eph_dict.keys, sys));
         if(num_sys > 0)
             logger.writeLine("%c: %d ephemeris valid.", sys, num_sys);
         end
     end
-    
-    logger.deStack("readrnx304: %d valid ephemeris loaded.\n", eph_dict.numEntries);
+    logger.deStack("Number of valid emphemeris: %d.", eph_dict.numEntries);
+    logger.deStack("readrnx304 finished.\n");
 end

@@ -8,8 +8,8 @@ function obs_seq = readnvlog(fname)
     blk_sig = [1, nan, nan, nan, 3, nan]; % blk_sig(i) = signal on the ith block
     blk_sync = false; % whether the observables of 1st block is found
     
-    obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'Fc', NaN, ... 
-        'Rho', NaN, 'ObsTime', NaN, 'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
+obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'SigName', [], ... 
+        'ObsTime', NaN, 'Fc', NaN, 'Rho', NaN, 'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
     obs_seq = cell(1, nobs_max);
     n = 1;
     i = 1;
@@ -76,7 +76,7 @@ function obs_seq = readnvlog(fname)
                 end
                 
                 obs = obs_t;
-                [obs.Sys, obs.Fc] = sig2sysfc(vals(field2idx("sig")));
+                [obs.Sys, obs.Fc, obs.SigName] = sig2sysfc(vals(field2idx("sig")));
                 obs.PRN = vals(field2idx("sv"));
                 obs.Rho = vals(field2idx("pseudo-range"));
                 obs.AcPh = vals(field2idx("carrierphase"));
@@ -106,14 +106,14 @@ function obs_seq = readnvlog(fname)
                         rec_t_gps = Utc2Gps(rec_t_utc);
                         %rec_t_gps_wn = rec_t_gps(1);
                         rec_t_gps_tow  = rec_t_gps(2) - LeapSeconds(rec_t_utc); % Leap seconds after year 2017
+                        for j = 1:length(obs_seq{n})
+                            obs_seq{n}(j).Time = rec_t_utc;
+                            obs_seq{n}(j).ObsTime = rec_t_gps_tow;
+                        end
+                        n = n + 1; % next frame
                     else
-                        rec_t_gps_tow = nan;
+                        obs_seq{n} = [];
                     end
-                    for j = 1:length(obs_seq{n})
-                        obs_seq{n}(j).Time = rec_t_utc;
-                        obs_seq{n}(j).ObsTime = rec_t_gps_tow;
-                    end
-                    n = n + 1; % next frame
                 end
                 b = b + 1; % next block            
             end
@@ -131,16 +131,16 @@ end
 
 
 %% Utils Parse NaVitech 'sig'
-function [sys, fc] = sig2sysfc(sig)
+function [sys, fc, signame] = sig2sysfc(sig)
     switch(sig)
         case 1 % B1I
-            sys = 'B'; fc = 1561.098e6;
+            sys = 'C'; fc = 1561.098e6; signame = 'C2I';
         case 3 % B3I
-            sys = 'B'; fc = 1268.52e6;
+            sys = 'C'; fc = 1268.52e6; signame = 'C6I';
         case 5 % GPS L1 C/A
-            sys = 'G'; fc = 1575.42e6;
+            sys = 'G'; fc = 1575.42e6; signame = 'G1C';
         case 6 % B1C
-            sys = 'B'; fc = 1575.42e6;
+            sys = 'C'; fc = 1561.098e6; signame = 'C2X';
         otherwise % undefined
             sys = '?'; fc = nan;
     end

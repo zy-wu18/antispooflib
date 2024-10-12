@@ -81,7 +81,7 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
         if(isempty(uobs_seq{i}))
             upvt_seq(i).Time = NaT;
         else
-            upvt_seq(i).Time = datetime(uobs_seq{i}(1).Time) + dtu(1);
+            upvt_seq(i).Time = datetime(uobs_seq{i}(1).Time) + dtu(1)/86400;
         end
         upvt_seq(i).Drift = ddtu;
         pntcfg.userLLA0 = ecef2lla(upvt_seq(max(i-1, 1)).Pos');
