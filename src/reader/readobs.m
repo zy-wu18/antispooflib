@@ -1,6 +1,6 @@
 function obs_seq = readobs(fname)
     logger = Logger();
-    logger.enStack("readrnx303: Loading from %s.", fname);
+    logger.enStack("readobs: Loading from %s.", fname);
     nobs_max = 86400;
     flines = readlines(fname); % Read file content as characters
     
@@ -90,7 +90,7 @@ function obs_seq = readobs(fname)
     logger.writeLine("Maximum/Minimum #obs = %3d/%3d;", ...
         max([cellfun(@(x) length(x), obs_seq)]), ...
         min([cellfun(@(x) length(x), obs_seq)]));
-    logger.deStack("readrnx303 finished.\n");
+    logger.deStack("readobs finished.\n");
 end
 
 function fc_arr = sname2fc(sname)

@@ -10,11 +10,11 @@ The input of `antispooflib` should include **observable** and **navigation data*
 
 The following figure shows the workflow of `antispooflib`：
 
-- `readrnx303.m` is responsible for reading a `.obs` file, which should be a single or multiple constellation observable file.
+- `readobs.m` is responsible for reading a `.obs` file, which should be a single or multiple constellation observable file.
   - Output: `obs_seq`, a sequence with `L` frames of observable
-- `readrnx304.m` is responsible for reading a `.nav/.rnx/.2?g/.2?n`file, which should be a single or multiple constellation navigation data file
+- `readnav.m` is responsible for reading a `.nav/.rnx/.2?g/.2?n`file, which should be a single or multiple constellation navigation data file
   - Output: `eph_dict`, a `dictionary` with keys formatted as `SNN`, such as `G01` for GPS SVN1.
-  - Note: The navigation data time should be as close with that of the observable data as possible. Only the satellites in the `.obs` file with corresponding valid navigation data read by `readrnx304.m` are allowed to participate in PNT solution.
+  - Note: The navigation data time should be as close with that of the observable data as possible. Only the satellites in the `.obs` file with corresponding valid navigation data read by `readnav.m` are allowed to participate in PNT solution.
 
 - `launchpnt.m` is responsible for PNT solution and spoofing detection using configurations `pntcfg`和 and `ascfg`
   - For each observable frame `obs` in `obs_seq`，look up `eph_dict` for the ephemeris involved.
@@ -187,13 +187,13 @@ Run `main.m` in MATLAB console.
    - Console output example
 
      ```
-     readrnx303: Loading from E:\Seafile\GNSS\gnss.workspace\antispooflib\data\COM14_2024-08-26_13.22.41.obs.
+     readobs: Loading from E:\Seafile\GNSS\gnss.workspace\antispooflib\data\COM14_2024-08-26_13.22.41.obs.
        421 data blocks detected.
        Progress: >>>>>>>>>>>>>>>   393/  421
        421 data blocks have been read successfully.
        Recorded from 2024-08-26 05:22:51 to 2024-08-26 05:24:51;
        Maximum/Minimum #obs =  34/  8;
-     readrnx303: 421 observations loaded.
+     readobs: 421 observations loaded.
      ```
 
 2. Follow the GUI guidance and select the `.nav` file mentioned above
@@ -202,14 +202,14 @@ Run `main.m` in MATLAB console.
    - Console output example
 
    ```
-   readrnx304: Loading from E:\Seafile\GNSS\gnss.workspace\antispooflib\data\COM14_2024-08-26_13.22.41.nav.
+   readnav: Loading from E:\Seafile\GNSS\gnss.workspace\antispooflib\data\COM14_2024-08-26_13.22.41.nav.
      Number of valid emphemeris: 20.
      G: 2 ephemeris valid.
      C: 10 ephemeris valid.
      J: 3 ephemeris valid.
      E: 2 ephemeris valid.
      R: 3 ephemeris valid.
-   readrnx304: 20 valid ephemeris loaded.
+   readnav: 20 valid ephemeris loaded.
    ```
 
    - If there are not enough ephemeris in `.nav`, one may also download the broadcast ephemeris of that day from [CDDIS | | archive | gnss | data | daily | 2024 | (nasa.gov)](https://cddis.nasa.gov/archive/gnss/data/daily/2024/brdc/).

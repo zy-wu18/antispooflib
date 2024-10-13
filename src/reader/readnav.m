@@ -11,7 +11,7 @@ function eph_dict = readnav(fname, t)
 
     %% Initialization
     logger = Logger();
-    logger.enStack("readrnx304: Loading from %s.", fname);
+    logger.enStack("readnav: Loading from %s.", fname);
     [~, ~, fext] = fileparts(fname);
     fid = fopen(fname);
     line = fgetl(fid);
@@ -200,5 +200,5 @@ function eph_dict = readnav(fname, t)
         end
     end
     logger.deStack("Number of valid emphemeris: %d.", eph_dict.numEntries);
-    logger.deStack("readrnx304 finished.\n");
+    logger.deStack("readnav finished.\n");
 end
