@@ -1,4 +1,4 @@
-function obs_seq = readrnx303(fname)
+function obs_seq = readobs(fname)
     logger = Logger();
     logger.enStack("readrnx303: Loading from %s.", fname);
     nobs_max = 86400;

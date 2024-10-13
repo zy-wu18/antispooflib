@@ -25,7 +25,7 @@ function fig_sd = plotspfdetect(sdres_seq, obs_rate)
         title(sdres_seq(i, 1).name);
         semilogy([min(tobs(vld)), max(tobs(vld))], [1 1], 'LineWidth', 1.0);
         vld = ~isnan(alarm(1, :)); % only emphasize the alarmed cases
-        if(~any(vld==true))
+        if(sum(vld) <= 1)
             continue;
         end
         semilogy(tobs, alarm(i, :), 'r', 'LineWidth', 1.0, 'Marker', 'square', 'MarkerFaceColor','r');

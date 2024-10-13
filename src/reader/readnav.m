@@ -1,5 +1,5 @@
-function eph_dict = readrnx304(fname, t)
-% RINEX304_Reader: yield ephemeris in <fname> nearest to datetime <t>
+function eph_dict = readnav(fname, t)
+% READOBS: yield ephemeris in <fname> nearest to datetime <t>
 % args  :   string      fname   full path the RINEX 3.04 navigation data file
 %           datetime    t       query UTC time
 % return:   dictionary  eph     1x3 char -> neph_t or geph_t

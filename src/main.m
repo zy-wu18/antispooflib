@@ -6,11 +6,11 @@ addpath(genpath('solver\'));
 try
     %% Load observation
     [obsfname, obsfpath] = uigetfile({'*.obs'; '*.log'}, ...
-        "Choose RINEX observable file...", "../data/");
+        "Choose observable file or Navi-log file...", "../data/");
     [~, ~, obsfext] = fileparts(obsfname);
     switch(obsfext)
         case '.obs'
-            obs_seq = readrnx303([obsfpath, obsfname]);
+            obs_seq = readobs([obsfpath, obsfname]);
         case '.log'
             obs_seq = readnvlog([obsfpath, obsfname]);
         otherwise
@@ -25,7 +25,7 @@ try
             '*.2?n; *.2?g; *.rnx; *.nav', ...
             'RINEX304(*.2?n, *.2?g, *.rnx, *.nav)'}, ...
         "Choose RINEX304 emphemeris file...", "../data/");
-    eph_dict = readrnx304([ephfpath, ephfname], obs_seq{1}(1).Time);
+    eph_dict = readnav([ephfpath, ephfname], obs_seq{1}(1).Time);
 
     %% Launch user PVT solver(1. solve P/V of satellites, 2. solve user P/V)
     obs_rate = 10; % [Hz], observation rate
