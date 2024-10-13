@@ -1,0 +1,14 @@
+% program   : RTKPOST ver.2.4.3 b34
+% inp file  : E:\Seafile\GNSS\gnss.workspace\antispooflib\data\COM3___115200_231206_085751.obs
+% inp file  : E:\Seafile\GNSS\gnss.workspace\antispooflib\data\BRDC00IGS_R_20242410000_01D_MN.rnx
+% obs start : 2023/12/06 08:58:15.7 GPST (week2291 291495.7s)
+% obs end   : 2023/12/06 09:06:01.8 GPST (week2291 291961.8s)
+% pos mode  : Single
+% elev mask : 0.0 deg
+% ionos opt : OFF
+% tropo opt : OFF
+% ephemeris : Broadcast
+% navi sys  : GPS Galileo QZSS BDS
+%
+% (lat/lon/height=WGS84/ellipsoidal,Q=1:fix,2:float,3:sbas,4:dgps,5:single,6:ppp,ns=# of satellites)
+%  GPST                  latitude(deg) longitude(deg)  height(m)   Q  ns   sdn(m)   sde(m)   sdu(m)  sdne(m)  sdeu(m)  sdun(m) age(s)  ratio    vn(m/s)    ve(m/s)    vu(m/s)      sdvn     sdve     sdvu    sdvne    sdveu    sdvun
