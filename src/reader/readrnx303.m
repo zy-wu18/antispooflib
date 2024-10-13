@@ -83,9 +83,9 @@ function obs_seq = readrnx303(fname)
             end
         end
     end
-    obs_seq = obs_seq(1:n-1);
+    obs_seq = obs_seq(1:n);
     logger.resetBar;
-    logger.writeLine("%d data blocks have been read successfully.", n-1);
+    logger.writeLine("%d data blocks have been read successfully.", n);
     logger.writeLine("Recorded from %s to %s;", datetime(obs_seq{1}(1).Time), datetime(obs_seq{end}(1).Time));
     logger.writeLine("Maximum/Minimum #obs = %3d/%3d;", ...
         max([cellfun(@(x) length(x), obs_seq)]), ...

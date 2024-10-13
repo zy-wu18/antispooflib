@@ -16,7 +16,7 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
 
     sys(sys=='J') = 'G';            % QZSS is equivalent to GPS in solution
     usys = unique(sys);             % systems involved
-    nsys = length(usys);     % number of systems involved
+    nsys = length(usys);            % number of systems involved
     N = 3 + nsys;                   % 3(position) + nsys(system-time-bias)
     M = length(rho);                % #Satellite used in PVT solution
     if(M < N)
@@ -29,8 +29,8 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
         return;
     end
 
-    pu_k = [0 0 0];                  % Initialized position (ECEF)
-    dtu_k = zeros(1, nsys);                       % Initialized clock bias
+    pu_k = [0 0 0];                 % Initialized position (ECEF)
+    dtu_k = zeros(1, nsys);         % Initialized clock bias
     error_k = 1e5;                  % Position correction 
     iter_max = 100;                 % Iteration allowance
     iter_cnt = 0;

@@ -82,6 +82,10 @@ obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'SigName', [], ...
                 obs.AcPh = vals(field2idx("carrierphase"));
                 obs.Fd = vals(field2idx("doppler"));
                 obs.CNR = vals(field2idx("cn0"));
+                obs.ObsTime = vals(field2idx("transmittime")) + obs.Rho/299792458;
+                if(obs.Sys == 'C')
+                    obs.ObsTime = mod(obs.ObsTime + 14.0, 7*86400);
+                end
                 if(~isnan(obs.Rho) && obs.Rho>1 && ~isnan(obs.Sys))
                     obs_seq{n} = insertobs(obs_seq{n}, obs);
                 end
@@ -95,20 +99,22 @@ obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'SigName', [], ...
                     assert(~isempty(lbias_chn));
                     fline = fline((lbias_chn+7):end);
                     vals = sscanf(fline, '%02d%02d%02d.%02d,%d,%d,%d')';
-                    rec_t_utc = vals([7,6,5,1,2,3])+[zeros(1,5), vals(4)/100];
+                    yrs = vals(7);
+                    mon = vals(6);
+                    day = vals(5);
                     i = i + 1;
                     fline = regexprep(flines{i}, '\s', '');
                     lbias_chn = strfind(fline, '$GNGGA');
                     assert(~isempty(lbias_chn));
                     fline = fline((lbias_chn+7):end);
                     vals = sscanf(fline, '%02d%02d%02d.%02d,%lf,%c,%lf,%c,%d,%d,%f,%f,%c,%f,%c');
-                    if(rec_t_utc(1) >= 1980 && rec_t_utc(1) <= 2099)
-                        rec_t_gps = Utc2Gps(rec_t_utc);
-                        %rec_t_gps_wn = rec_t_gps(1);
-                        rec_t_gps_tow  = rec_t_gps(2) - LeapSeconds(rec_t_utc); % Leap seconds after year 2017
+                    if(yrs >= 1980 && yrs <= 2099)
                         for j = 1:length(obs_seq{n})
-                            obs_seq{n}(j).Time = rec_t_utc;
-                            obs_seq{n}(j).ObsTime = rec_t_gps_tow;
+                            dow = floor(obs.ObsTime/86400);
+                            hrs = floor((obs.ObsTime - dow*86400)/3600);
+                            mnt = floor((obs.ObsTime - (dow*86400+hrs*3600))/60);
+                            sec = obs.ObsTime - ((dow*24+hrs)*60+mnt)*60;
+                            obs_seq{n}(j).Time = [yrs, mon, day, hrs, mnt, sec];
                         end
                         n = n + 1; % next frame
                     else
