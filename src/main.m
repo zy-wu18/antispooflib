@@ -7,7 +7,7 @@ try
     %% Load observation
     [obsfname, obsfpath] = uigetfile({'*.obs'; '*.log'}, ...
         "Choose observable file or Navi-log file...", "../data/");
-    [~, ~, obsfext] = fileparts(obsfname);
+    [~, ~, obsfext] = fileparts(obsfname); 
     switch(obsfext)
         case '.obs'
             obs_seq = readobs([obsfpath, obsfname]);
@@ -29,9 +29,11 @@ try
 
     %% Launch user PVT solver(1. solve P/V of satellites, 2. solve user P/V)
     obs_rate = 10; % [Hz], observation rate
+    opt = {'None'; 'Klobuchar'; 'IonoFree'};
     pntcfg = struct( ... % PNT configurator
         'cnrMask', 0, 'elvMask', 0, ...
         'userLLA0', [40 116 0], ...
+        'iono_opt',opt{2},...
         'constellation', 'GJEC', ...
         'pntSolver', @(rho,drho,ps,vs,dts,cnrs,sys)lse4pnt(rho,drho,ps,vs,dts,sys));
     ascfg = struct(... anti-spoofing configurator

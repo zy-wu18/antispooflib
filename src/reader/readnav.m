@@ -29,16 +29,60 @@ function eph_dict = readnav(fname, t)
         sys_default = 'R';
     end
     
-    %% Skip header
+    %% Skip header && Read Alpha & Beta
+    alpha_beta = zeros(4, 2);
+    eph_dict = dictionary();
+
     line = fgetl(fid);
     l = 1;
     while ~contains(line, 'END OF HEADER')
+         switch sys_default
+            case ''
+                if (contains(line, 'IONOSPHERIC'))
+                    sys_sat = split(line(1:5));
+                    switch sys_sat{1}
+                        case 'GPSA'
+                            alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                        case 'GPSB'
+                            alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                            eph_dict("iono_GPS") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                        case 'GAL'
+                            alpha_beta(1:3, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                            eph_dict("iono_GAL") = struct('GAL_corr', alpha_beta(1:3, 1));
+                        case 'BDSA'
+                            alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                        case 'BDSB'
+                            alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                            eph_dict("iono_BDS") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                        case 'QZSA'
+                            alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                        case 'QZSB'
+                            alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                            eph_dict("iono_QZS") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                        case 'IRNA'
+                            alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                        case 'IRNB'
+                            alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
+                            eph_dict("iono_IRN") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                        otherwise
+                    end
+                end
+            case 'G'
+                if (contains(line, 'ALPHA'))
+                    alpha_beta(:, 1) = sscanf(replace(line, "D", "e"), "%lf");
+                elseif (contains(line, 'BETA'))
+                    alpha_beta(:, 2) = sscanf(replace(line, "D", "e"), "%lf");
+                    eph_dict("iono") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                end 
+            case 'R'
+                %TODO
+            otherwise
+        end
         line = fgetl(fid);
         l = l+1;
     end
     
     %% Output initialization
-    eph_dict = dictionary();
     
     % GPS, Galileo, BDS, QZNSS ephemeris
     eph_n_t = struct('sys',[],  'PRN',[],       'Toc_cal',[], ...

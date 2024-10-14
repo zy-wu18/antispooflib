@@ -73,6 +73,11 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
         % Satellite position and observables fix
         [ps, vs, dts, rhos, drhos, cnrs, uobs_seq{i}] = ...
             ephposfix(obs_seq{i}, eph_dict, pntcfg, lla2ecef(pntcfg.userLLA0));
+         % IonoDelayEstimation
+        if(i > 1)
+            [dIons(:, i), rhos, drhos, ps, vs, dts, cnrs, uobs_seq{i}] = ...
+                ionocorr(ps, vs, dts, rhos, drhos, cnrs, eph_dict("iono").alpha, eph_dict("iono").beta, obs_seq{i}, uobs_seq{i}, upvt_seq(i - 1), pntcfg.iono_opt, eph_dict);
+        end
         % PNT solver
         [pu, vu, dtu, ddtu] = ...
             pntcfg.pntSolver(rhos', drhos', ps', vs', dts', cnrs', [uobs_seq{i}.Sys]);
@@ -92,19 +97,22 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
             sdres = spoofdetect(rhos',drhos',ps',vs',dts',cnrs',keys',ascfg.spfDetector);
             asres_seq(:, i) = sdres;
         end
+
+        %% ECEF to ENU
+        user_pos = upvt_seq(i).Pos;
+        if (i > 1)
+            lla0 = ecef2lla(upvt_seq(2).Pos');
+            [E, N, U] = ecef2enu(user_pos(1), user_pos(2), user_pos(3), ...
+                lla0(1), lla0(2), lla0(3), wgs84Ellipsoid('meter'));
+            upvt_seq(i).PosENU = [E; N; U];
+        else
+            upvt_seq(i).PosENU = [0; 0; 0];
+        end
+        upvt_seq(i).PosLLA = ecef2lla(upvt_seq(i).Pos');
     end
     logger.resetBar();
     logger.writeLine("User status obtained in ECEF coordinate.");
 
-    %% ECEF to ENU
-    lla0 = ecef2lla(upvt_seq(end).Pos');
-    user_pos = [upvt_seq.Pos];
-    [E, N, U] = ecef2enu(user_pos(1, :), user_pos(2, :), user_pos(3, :), ...
-        lla0(1), lla0(2), lla0(3), wgs84Ellipsoid('meter'));
-    for i = 1:L
-        upvt_seq(i).PosLLA = ecef2lla(upvt_seq(i).Pos');
-        upvt_seq(i).PosENU = [E(i); N(i); U(i)];
-    end
     logger.writeLine("User status obtained in ENU coordinate.");
     logger.deStack("pntSolver: User PVT calculation finished.");
 
