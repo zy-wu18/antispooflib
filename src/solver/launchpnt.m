@@ -72,11 +72,13 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
         
         % Satellite position and observables fix
         [ps, vs, dts, rhos, drhos, cnrs, uobs_seq{i}] = ...
-            ephposfix(obs_seq{i}, eph_dict, pntcfg, lla2ecef(pntcfg.userLLA0));
+            ephposfix(obs_seq{i}, eph_dict, pntcfg, lla2ecef(pntcfg.userLLA0), pntcfg.ionoOpt);
          % IonoDelayEstimation
         if(i > 1)
+            alpha = eph_dict(['iono_', uobs_seq{i}(1).Sys]).alpha;
+            beta = eph_dict(['iono_', uobs_seq{i}(1).Sys]).beta;
             [dIons(:, i), rhos, drhos, ps, vs, dts, cnrs, uobs_seq{i}] = ...
-                ionocorr(ps, vs, dts, rhos, drhos, cnrs, eph_dict("iono").alpha, eph_dict("iono").beta, obs_seq{i}, uobs_seq{i}, upvt_seq(i - 1), pntcfg.iono_opt, eph_dict);
+                ionocorr(ps, vs, dts, rhos, drhos, cnrs, alpha, beta, obs_seq{i}, uobs_seq{i}, upvt_seq(i - 1), pntcfg.ionoOpt, eph_dict);
         end
         % PNT solver
         [pu, vu, dtu, ddtu] = ...

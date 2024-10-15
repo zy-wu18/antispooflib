@@ -1,4 +1,4 @@
-function [ps, dts] = neph2pt(tsv, eph)
+function [ps, dts] = neph2pt(tsv, eph, iono_opt)
 % Calculate the position, velocity and clock bias of a G/C/J/E satellite
 % args  :   double      tsv     transmit time, tsv = tlatch - rho/c
 %           eph_t       eph     G/C/J/E ephemeris data struct
@@ -68,6 +68,10 @@ function [ps, dts] = neph2pt(tsv, eph)
     % Satellite time
     dtsv = eph2clk(tsv, eph);
     dtsr = F*e*sqrt_a*sin(Ek); % relativity fix
-    dts = dtsv + dtsr - TGD(1);
+    if (strcmp(iono_opt,'IonoFree') || strcmp(eph.sys, 'C'))
+        dts = dtsv + dtsr;
+    else
+        dts = dtsv + dtsr - TGD(1);
+    end
 end
 

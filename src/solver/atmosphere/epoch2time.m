@@ -1,4 +1,8 @@
 function [utime, usec] = epoch2time(u_datetime)
+% convert datetime to TOW
+% args  :   datetime    u_datetime      query UTC time
+% return:   int         utime           [s],integer part of TOW
+%           double      usec            [s],fractional part of TOW
 doy = [1,32,60,91,121,152,182,213,244,274,305,335];
 uyear = year(u_datetime);
 umon = month(u_datetime);

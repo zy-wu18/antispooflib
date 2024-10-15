@@ -45,25 +45,25 @@ function eph_dict = readnav(fname, t)
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'GPSB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_GPS") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict("iono_G") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         case 'GAL'
                             alpha_beta(1:3, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_GAL") = struct('GAL_corr', alpha_beta(1:3, 1));
+                            eph_dict("iono_E") = struct('GAL_corr', alpha_beta(1:3, 1));
                         case 'BDSA'
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'BDSB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_BDS") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict("iono_C") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         case 'QZSA'
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'QZSB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_QZS") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict("iono_J") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         case 'IRNA'
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'IRNB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_IRN") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict("iono_R") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         otherwise
                     end
                 end
@@ -72,7 +72,7 @@ function eph_dict = readnav(fname, t)
                     alpha_beta(:, 1) = sscanf(replace(line, "D", "e"), "%lf");
                 elseif (contains(line, 'BETA'))
                     alpha_beta(:, 2) = sscanf(replace(line, "D", "e"), "%lf");
-                    eph_dict("iono") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                    eph_dict("iono_G") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                 end 
             case 'R'
                 %TODO

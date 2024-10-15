@@ -1,4 +1,4 @@
-function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pntcfg, pu_ref)
+function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pntcfg, pu_ref, iono_opt)
 %EPHPOSFIX ephemeris positioning and measurement fix
 % args  :   1xM0 obs_t  obs_raw     a single raw observable frame
 %           dictionary  eph_dict    string->struct(neph_t, or geph_t) with
@@ -35,7 +35,7 @@ function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict
         c3 = ~((j>1) && (o.Sys==obs_raw(j-1).Sys) && (o.PRN==obs_raw(j-1).PRN));
         c4 = any(o.Sys == pntcfg.constellation) && o.CNR > pntcfg.cnrMask;
         c5 = isKey(eph_dict, key) && (elv_mask_off || ...
-            (satelaz(pu_ref,eph2pvt(o.ObsTime, eph_dict(key)))/pi*180 >= pntcfg.elvMask));
+            (satelaz(pu_ref,eph2pvt(o.ObsTime, eph_dict(key), iono_opt))/pi*180 >= pntcfg.elvMask));
 
         if(c1 && c2 && c3 && c4 && c5)
             M = M + 1;
@@ -59,7 +59,7 @@ function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict
         eph = eph_dict(key);
         tsv = o.ObsTime - o.Rho/c; % transmit time = tlatch - rho/c
         tsv = tsv - eph2clk(tsv, eph);
-        [ps(:, j), vs(:, j), dts(j)] = eph2pvt(tsv, eph);
+        [ps(:, j), vs(:, j), dts(j)] = eph2pvt(tsv, eph, iono_opt);
         rhos(j) = o.Rho;
         drhos(j)= -1.0*o.Fd/o.Fc*c;
         cnrs(j) = o.CNR;
