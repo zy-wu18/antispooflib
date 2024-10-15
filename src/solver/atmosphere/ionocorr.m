@@ -17,7 +17,7 @@ function [dIons, rhos_corr, drhos_corr, ps_corr, vs_corr, dts_corr, cnrs_corr, u
 %                               'IF' for dual frequency model;
 %           dictionary  eph_dict ephemeris data struct
 
-% return:  32x1 double  dIons       [s], ionospheric delay
+% return:   Mx1 double  dIons       [s], ionospheric delay
 %           1xM double  rhos_corr   [m], satellite pseodoranges
 %           1xM double  drhos_corr  [], satellite pseodorange rates
 %           3xM double  ps_corr     [m], satellite ECEF position [x, y, z]
@@ -33,19 +33,15 @@ switch opt
         prn_num = length(uobs);
         rhos_corr = zeros(1, prn_num);
         %TGD correction for BDS B1I
-         for k = 1:prn_num
-             if(strcmp(uobs(k).Sys, 'C'))
-                 if(uobs(k).PRN<10)
-                    str = [uobs(k).Sys, '0', num2str(uobs(k).PRN)];
-                 else
-                    str = [uobs(k).Sys, num2str(uobs(k).PRN)];
-                 end
-                 TGD = eph_dict(str).TGD;
-                 rhos_corr(k) = rhos(k) - c*TGD(1);
-             else
-                 rhos_corr(k) = rhos(k);
-             end
-         end        
+        for k = 1:prn_num
+            key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
+            if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))
+                TGD = eph_dict(key).TGD;
+                rhos_corr(k) = rhos(k) - c*TGD(1);
+            else
+                rhos_corr(k) = rhos(k);
+            end
+        end
         drhos_corr = drhos;
         ps_corr = ps;
         vs_corr = vs;

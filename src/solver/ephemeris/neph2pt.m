@@ -68,10 +68,6 @@ function [ps, dts] = neph2pt(tsv, eph, iono_opt)
     % Satellite time
     dtsv = eph2clk(tsv, eph);
     dtsr = F*e*sqrt_a*sin(Ek); % relativity fix
-    if (strcmp(iono_opt,'IonoFree') || strcmp(eph.sys, 'C'))
-        dts = dtsv + dtsr;
-    else
-        dts = dtsv + dtsr - TGD(1);
-    end
+    dts = dtsv + dtsr;
 end
 

@@ -8,7 +8,7 @@ function [rhos_IF, drhos_IF, ps_IF, vs_IF, dts_IF, cnrs_IF, dIons, uobs_out] = .
 %           1xM double  cnrs    [dB·Hz], satellite Carrier-Noise-Ratios
 %           1x2M struct obs     satellites dual frequency observation
 %           dictionary  eph_dict  ephemeris data struct
-% return:  32x1 double  dIons       [s], ionospheric delay
+% return:   Mx1 double  dIons       [s], ionospheric delay
 %           1xM double  rhos_IF     [m], satellite pseodoranges
 %           1xM double  drhos_IF    [], satellite pseodorange rates
 %           3xM double  ps_IF       [m], satellite ECEF position [x, y, z]
@@ -54,12 +54,7 @@ for k = 1:prn_num
             dIons(k, 1) = (rhos_f2(k) - rhos_f1(k)) / (gamma - 1);
             dIons(k, 2) = gamma* (rhos_f2(k) - rhos_f1(k)) / (gamma - 1);
         case 'C'
-            if(uobs(k).PRN<10)
-                str = [uobs(k).Sys, '0', num2str(uobs(k).PRN)];
-            else
-                str = [uobs(k).Sys, num2str(uobs(k).PRN)];
-            end
-            TGD = eph_dict(str).TGD;
+            TGD = eph_dict(sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN)).TGD;
             gamma = (obs_f1(k).Fc/obs_f2(k).Fc)^2;
             rhos_f1(k) = rhos_f1(k) - c*TGD(1);
             rhos_IF(k) = (rhos_f2(k) - gamma * rhos_f1(k)) / (1 - gamma);
