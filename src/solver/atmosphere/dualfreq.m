@@ -20,13 +20,13 @@ for m = 1:M0-1
     if(p > length(uobs) || obs(m).Sys~=uobs(p).Sys || obs(m).PRN~=uobs(p).PRN)
         continue; % unused observable
     end
-    p = p + 1; % used observable
     % used, and both frequency available
     if(obs(m).Sys==obs(m+1).Sys && obs(m).PRN==obs(m+1).PRN)
         assert(obs(m).Fc ~= obs(m+1).Fc);
         obs_indice0(m) = 1;
-        obs_indice(p-1) = 1;
+        obs_indice(p) = 1;
     end
+    p = p + 1;
 end
 obs_f1 = obs(obs_indice0>0);
 obs_f2 = obs([0, obs_indice0(1:end-1)]>0);
@@ -37,7 +37,7 @@ rhos_f1 = [obs_f1.Rho];
 rhos_f2 = [obs_f2.Rho];
 M = sum(obs_indice0);
 dIons = zeros(2, M);
-obs_indice = obs_indice(1:M);
+obs_indice = obs_indice(1:length(uobs));
 rhos_IF = zeros(1, M);
 %calculate Ion delay
 for m = 1:M
