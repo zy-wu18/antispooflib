@@ -61,10 +61,10 @@ function [dIons, rhos_corr, drhos_corr, ps_corr, vs_corr, dts_corr, cnrs_corr, u
                 end
             end
     end
-    drhos_corr = drhos(obs_indice);
-    ps_corr = ps(:, obs_indice);
-    vs_corr = vs(:, obs_indice);
-    dts_corr = dts(obs_indice);
-    cnrs_corr = cnrs(obs_indice); 
-    uobs = uobs(obs_indice);
+    drhos_corr = drhos(find(obs_indice));
+    ps_corr = ps(:, find(obs_indice));
+    vs_corr = vs(:, find(obs_indice));
+    dts_corr = dts(find(obs_indice));
+    cnrs_corr = cnrs(find(obs_indice)); 
+    uobs = uobs(find(obs_indice));
 end

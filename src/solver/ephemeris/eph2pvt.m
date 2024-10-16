@@ -1,4 +1,4 @@
-function [ps, vs, dts] = eph2pvt(tsv, eph, iono_opt)
+function [ps, vs, dts] = eph2pvt(tsv, eph)
 % Calculate the position, velocity and clock bias of a single satellite
 % args  :   double      tsv     transmit time, tsv = tlatch - rho/c
 %           eph_t       eph     ephemeris data struct
@@ -11,9 +11,9 @@ function [ps, vs, dts] = eph2pvt(tsv, eph, iono_opt)
 %           runge_katta_4 iterator.
 
     if any(eph.sys == ['G' 'E' 'J' 'C'])
-        [ps, dts] = neph2pt(tsv, eph, iono_opt);
+        [ps, dts] = neph2pt(tsv, eph);
         dt = 1e-3;
-        [ps1, ~ ] = neph2pt(tsv+dt, eph, iono_opt);
+        [ps1, ~ ] = neph2pt(tsv+dt, eph);
         vs = (ps1 - ps)/dt;
 
     elseif any(eph.sys == ['R' 'S'])

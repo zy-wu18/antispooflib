@@ -45,7 +45,6 @@ F = 1 + 16 * (0.53 - el/pi).^3;
 B = zeros(1, M);
 A = zeros(1, M);
 x = zeros(1, M);
-dIon = zeros(1, M);
 
 for m = 1:M
     alpha = eph_dict(['iono_', uobs(1).Sys]).alpha;

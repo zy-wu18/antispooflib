@@ -12,15 +12,24 @@ function [rhos_IF, dIons, obs_indice] = dualfreq(obs, uobs, eph_dict)
 %           1xM struct  obs_indice  indice of DF satellites observation used
 
 %delete satellites which have no L2C signal
-obs_f1 = obs(1:2:end);
-obs_f2 = obs(2:2:end);
-obs_f1 = obs_f1(~isnan([obs_f2.Rho]));
-if (length(uobs) > length(obs_f1))
-    obs_indice = ~isnan([obs_f2.Rho]);
-else
-    obs_indice = 1:length(uobs);
+M0 = length(obs);
+M = 1;
+obs_f1 = obs;
+obs_f2 = obs;
+obs_indice = zeros(1, M0);
+for m = 1:M0-1
+    if(obs(m).Sys~=uobs(M).Sys || obs(m).PRN~=uobs(M).PRN)
+        continue; % unused observable
+    end
+    % used, and both frequency available
+    if(obs(m).Sys==obs(m+1).Sys && obs(m).PRN==obs(m+1).PRN)
+        assert(obs(m).Fc ~= obs(m+1).Fc);
+        obs_f1(M) = obs(m);
+        obs_f2(M) = obs(m+1);
+        M = M+1;
+        obs_indice(m) = 1;
+    end
 end
-obs_f2 = obs_f2(obs_indice);
 
 c = 2.99792458e8;
 rhos_f1 = [obs_f1.Rho];
@@ -47,4 +56,4 @@ for m = 1:M
         otherwise
     end
 end
-dIons = dIons(:, 1) / c;
+dIons = dIons(1,:) / c; % default fix L1 pseudo range

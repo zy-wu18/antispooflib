@@ -8,7 +8,7 @@ function obs_seq = readnvlog(fname)
     blk_sig = [1, nan, nan, nan, 3, nan]; % blk_sig(i) = signal on the ith block
     blk_sync = false; % whether the observables of 1st block is found
     
-obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'SigName', [], ... 
+    obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'SigName', [], ... 
         'ObsTime', NaN, 'Fc', NaN, 'Rho', NaN, 'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
     obs_seq = cell(1, nobs_max);
     n = 1;
