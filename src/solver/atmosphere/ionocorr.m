@@ -44,7 +44,7 @@ function [dIons, rhos_corr, drhos_corr, ps_corr, vs_corr, dts_corr, cnrs_corr, u
             end
         case 'K'
             upvt_LLA0 = upvt.PosLLA;
-            [rhos_corr, dIons] = klobuchar(rhos, uobs, upvt_LLA0, [uobs.Az], [uobs.El], eph_dict);
+            [rhos_corr, dIons] = Klobuchar(rhos, uobs, upvt_LLA0, [uobs.Az], [uobs.El], eph_dict);
         case 'IF'
             [rhos_corr, dIons, obs_indice] = dualfreq(obs, uobs, eph_dict);
         otherwise
