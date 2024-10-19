@@ -28,29 +28,17 @@ function [dIons, rhos_corr, drhos_corr, ps_corr, vs_corr, dts_corr, cnrs_corr, u
     
     c = 2.99792458e8;
     obs_indice = 1:length(uobs);
+    M = length(uobs);
+    dIons = zeros(1, M);
+    rhos_corr = zeros(1, M);
+    
     switch opt
-        case 'N'
-            M = length(uobs);
-            dIons = zeros(1, M);
-            rhos_corr = zeros(1, M);
-            for k = 1:M
-                key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
-                if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))
-                    TGD = eph_dict(key).TGD;
-                    rhos_corr(k) = rhos(k) - c*TGD(1);
-                else
-                    rhos_corr(k) = rhos(k);
-                end
-            end
         case 'K'
             upvt_LLA0 = upvt.PosLLA;
             [rhos_corr, dIons] = Klobuchar(rhos, uobs, upvt_LLA0, [uobs.Az], [uobs.El], eph_dict);
         case 'IF'
             [rhos_corr, dIons, obs_indice] = dualfreq(obs, uobs, eph_dict);
-        otherwise
-            M = length(uobs);
-            dIons = zeros(M, 1);
-            rhos_corr = zeros(1, M);
+        case 'N'
             for k = 1:M
                 key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
                 if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))
@@ -60,11 +48,22 @@ function [dIons, rhos_corr, drhos_corr, ps_corr, vs_corr, dts_corr, cnrs_corr, u
                     rhos_corr(k) = rhos(k);
                 end
             end
+        otherwise
+            for k = 1:M
+                key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
+                if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))
+                    TGD = eph_dict(key).TGD;
+                    rhos_corr(k) = rhos(k) - c*TGD(1);
+                else
+                    rhos_corr(k) = rhos(k);
+                end
+            end
+
     end
-    drhos_corr = drhos(find(obs_indice));
-    ps_corr = ps(:, find(obs_indice));
-    vs_corr = vs(:, find(obs_indice));
-    dts_corr = dts(find(obs_indice));
-    cnrs_corr = cnrs(find(obs_indice)); 
-    uobs = uobs(find(obs_indice));
+    drhos_corr = drhos(obs_indice>0);
+    ps_corr = ps(:, obs_indice>0);
+    vs_corr = vs(:, obs_indice>0);
+    dts_corr = dts(obs_indice>0);
+    cnrs_corr = cnrs(obs_indice>0); 
+    uobs = uobs(obs_indice>0);
 end

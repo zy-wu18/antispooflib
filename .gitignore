@@ -2,3 +2,4 @@ src/*.asv
 src/**/*.asv
 src_v0/**
 data/**
+*.mat
