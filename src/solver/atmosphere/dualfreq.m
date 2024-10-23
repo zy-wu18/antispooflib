@@ -17,11 +17,11 @@ p = 1;
 obs_indice0 = zeros(1, M0);
 obs_indice = zeros(1, M0);
 for m = 1:M0-1
-    if(p > length(uobs) || obs(m).Sys~=uobs(p).Sys || obs(m).PRN~=uobs(p).PRN)
+    if(p>length(uobs) || isnan(obs(m).Rho) || obs(m).Sys~=uobs(p).Sys || obs(m).PRN~=uobs(p).PRN)
         continue; % unused observable
     end
     % used, and both frequency available
-    if(obs(m).Sys==obs(m+1).Sys && obs(m).PRN==obs(m+1).PRN)
+    if(obs(m).Sys==obs(m+1).Sys && obs(m).PRN==obs(m+1).PRN && ~isnan(obs(m+1).Rho))
         assert(obs(m).Fc ~= obs(m+1).Fc);
         obs_indice0(m) = 1;
         obs_indice(p) = 1;
