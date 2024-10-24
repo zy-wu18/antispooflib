@@ -83,10 +83,11 @@ function obs_seq = readnvlog(fname)
                 obs.Fd = vals(field2idx("doppler"));
                 obs.CNR = vals(field2idx("cn0"));
                 obs.ObsTime = vals(field2idx("transmittime")) + obs.Rho/299792458;
-                if(obs.Sys == 'C')
+                obs_time_valid = obs.ObsTime > 0;
+                if(obs.Sys == 'C' && obs_time_valid)
                     obs.ObsTime = mod(obs.ObsTime + 14.0, 7*86400);
                 end
-                if(~isnan(obs.Rho) && obs.Rho>1 && ~isnan(obs.Sys))
+                if(~isnan(obs.Rho) && obs.Rho>1 && ~isnan(obs.Sys) && obs_time_valid)
                     obs_seq{n} = insertobs(obs_seq{n}, obs);
                 end
             end
@@ -110,10 +111,10 @@ function obs_seq = readnvlog(fname)
                     vals = sscanf(fline, '%02d%02d%02d.%02d,%lf,%c,%lf,%c,%d,%d,%f,%f,%c,%f,%c');
                     if(yrs >= 1980 && yrs <= 2099)
                         for j = 1:length(obs_seq{n})
-                            dow = floor(obs.ObsTime/86400);
-                            hrs = floor((obs.ObsTime - dow*86400)/3600);
-                            mnt = floor((obs.ObsTime - (dow*86400+hrs*3600))/60);
-                            sec = obs.ObsTime - ((dow*24+hrs)*60+mnt)*60;
+                            dow = floor(obs_seq{n}(j).ObsTime/86400);
+                            hrs = floor((obs_seq{n}(j).ObsTime - dow*86400)/3600);
+                            mnt = floor((obs_seq{n}(j).ObsTime - (dow*86400+hrs*3600))/60);
+                            sec = obs_seq{n}(j).ObsTime - ((dow*24+hrs)*60+mnt)*60;
                             obs_seq{n}(j).Time = [yrs, mon, day, hrs, mnt, sec];
                         end
                         n = n + 1; % next frame
