@@ -23,13 +23,15 @@ function [dions, rhos_corr, uobs] = ...
     dions = zeros(1, M);
     rhos_corr = zeros(1, M);
     
-    switch opt
-        case 'K'
-            upvt_LLA0 = upvt.PosLLA;
-            [rhos_corr, dions] = Klobuchar(rhos, uobs, upvt_LLA0, [uobs.Az], [uobs.El], eph_dict);
-        case 'IF'
+    switch upper(opt)
+        case {'K', 'KLOBUCHAR'}
+            [rhos_corr, dions] = Klobuchar(uobs, upvt.PosLLA, eph_dict);
+        case {'IF', 'IFLC', 'IONOFREE'}
             [rhos_corr, dions, uobs] = dualfreq(obs, uobs, eph_dict);
-        case 'N'
+        case 'GIM'
+            ionpath = 'E:/Seafile/GNSS/gnss.workspace/ionstatistics/ionstatistics/ionstatistics_2023-2024_274-299.mat';
+            [rhos_corr, dions] = gim2dions(ionpath, uobs, upvt);
+        case {'N', 'NULL'}
             for k = 1:M
                 key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
                 if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))

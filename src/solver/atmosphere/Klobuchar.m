@@ -1,4 +1,4 @@
-function [rhos_K, dIon] = klobuchar(rhos, uobs, upvt_LLA0, az, el, eph_dict)
+function [rhos_K, dIon] = Klobuchar(uobs, upvt_LLA0, eph_dict)
 % Calculate ionospheric delay using Klobuchar model
 % args  :   4x1 double  alpha     ionospheric parameters in broadcast ephemeris
 %           4x1 double  beta      ionospheric parameters in broadcast ephemeris
@@ -15,6 +15,8 @@ function [rhos_K, dIon] = klobuchar(rhos, uobs, upvt_LLA0, az, el, eph_dict)
 
 M = length(uobs);
 c = 2.99792458e8;
+az = [uobs.Az];
+el = [uobs.El];
 % Calculate the geocentric angle
 PSI = 0.0137./(el/pi + 0.11) - 0.022;
 % Calculate the geographic latitude of the puncture point
@@ -61,7 +63,7 @@ for m = 1:M
     end
 end
 dIon = F .*(5e-9 + A .* (1 - x.^2/2 + x.^4/24).*(abs(x) < 1.57));
-rhos_K = rhos - c*dIon;
+rhos_K = [uobs.Rho] - c*dIon;
 
 % TGD correction
 for k = 1:M
