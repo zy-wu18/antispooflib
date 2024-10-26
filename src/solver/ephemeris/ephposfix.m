@@ -29,15 +29,24 @@ function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict
 
     for j = 1:M0
         o = obs_raw(j);
+        if(j > 1)
+            oprev = obs_raw(j-1);
+        end
+        if(j < M0)
+            onext = obs_raw(j+1);
+        end
         key = sprintf("%c%02d", o.Sys, o.PRN);
-        c1 = isKey(eph_dict, key) && (eph_dict(key).Health==0);
-        c2 = ~(isempty(o.Fd) || isempty(o.Rho));
-        c3 = ~((j>1) && (o.Sys==obs_raw(j-1).Sys) && (o.PRN==obs_raw(j-1).PRN));
-        c4 = any(o.Sys == pntcfg.constellation) && o.CNR > pntcfg.cnrMask;
+        c1 = isKey(eph_dict, key) && (eph_dict(key).Health==0); % Ephemeris validity
+        c2 = ~(isnan(o.Fd) || isnan(o.Rho)); % Both loop locked
+        c3 = ~((j>1) && (o.Sys==oprev.Sys) && (o.PRN==oprev.PRN)); % Is first-ordered obs
+        c4 = any(o.Sys == pntcfg.constellation) && o.CNR > pntcfg.cnrMask; % Constellation + CNR mask
         c5 = isKey(eph_dict, key) && (elv_mask_off || ...
-            (satelaz(pu_ref,eph2pvt(o.ObsTime, eph_dict(key)))/pi*180 >= pntcfg.elvMask));
+            (satelaz(pu_ref,eph2pvt(o.ObsTime, eph_dict(key)))/pi*180 >= pntcfg.elvMask)); % Elv mask
+        c6 = ~strcmp(pntcfg.ionoOpt, 'IF') || ...
+            (j<M0 && o.Sys==onext.Sys && o.PRN==onext.PRN && ...
+            ~isnan(onext.Fd) && ~isnan(onext.Rho) && onext.CNR > pntcfg.cnrMask); % Dual-freq check
 
-        if(c1 && c2 && c3 && c4 && c5)
+        if(c1 && c2 && c3 && c4 && c5 && c6)
             M = M + 1;
             obs_pvt(M) = o;
         end
