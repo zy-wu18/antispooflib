@@ -29,6 +29,7 @@ for m = 1:length(uobs)
     end
 end
 assert(length(obs1) == length(obs2));
+uobs = reshape([obs1, obs2], 1, []);
 
 c = 2.99792458e8;
 rhos1 = [obs1.Rho];

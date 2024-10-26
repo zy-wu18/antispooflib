@@ -9,7 +9,8 @@ function obs_seq = readnvlog(fname)
     blk_sync = false; % whether the observables of 1st block is found
     
     obs_t = struct('Time', NaT, 'Sys', '?', 'PRN', NaN, 'SigName', [], ... 
-        'ObsTime', NaN, 'Fc', NaN, 'Rho', NaN, 'Fd', NaN, 'AcPh', NaN, 'CNR', NaN);
+        'ObsTime', NaN, 'Fc', NaN, 'Rho', NaN, 'Fd', NaN, ...
+        'AcPh', NaN, 'CNR', NaN, 'Az', NaN, 'El', NaN);
     obs_seq = cell(1, nobs_max);
     n = 1;
     i = 1;
