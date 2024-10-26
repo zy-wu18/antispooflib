@@ -53,10 +53,10 @@ function [rhos_corr, dions] = gim2dions(ionpath, uobs, upvt)
     for j = 1:M
         vtec(j) = interp2(lons, lats, vtecmap, lambda(j)*180, phi(j)*180)*meter2tecu;
         %vtec(j) = interp2(lons, lats, vtecmap, pu_lla(2), pu_lla(1))*meter2tecu;
-        stec(j) = vtec(j) * sqrt(1 - (6371/(6371+H)*cos(el(j)))^2);
+        stec(j) = vtec(j) * 1/sqrt(1 - (6371/(6371+H)*cos(el(j)))^2);
         tecu2meter = 40.3*1e16/uobs(j).Fc^2;
+        rhos_corr(j) = uobs(j).Rho - tecu2meter*stec(j);
         dions(j) = tecu2meter*stec(j)/2.99792458e8;
-        rhos_corr(j) = uobs(j).Rho - dions(j);
     end
 end
 
