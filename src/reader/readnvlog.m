@@ -128,6 +128,28 @@ function obs_seq = readnvlog(fname)
         end
     end
     obs_seq = obs_seq(1:(n-1));
+    
+    %% Remove redundent observations, maybe multi-peak detection
+    for i = 1:n-1
+        obs = obs_seq{i};
+        obsf = [];
+        keys = arrayfun(@(o)sprintf('%c%02d-%s',o.Sys,o.PRN,o.SigName), obs, 'UniformOutput', false);
+        ukeys = unique(keys);
+        for m = 1:length(ukeys)
+            ikeys = arrayfun(@(k)strcmp(k, ukeys(m)), keys);
+            if(sum(ikeys) == 1)
+                obsf = [obsf, obs(ikeys)];
+                continue;
+            else
+                cnrs = [obs(ikeys).CNR];
+                keys_midx = find(cnrs == max(cnrs), 1);
+                keys_aidx = find(ikeys);
+                obsf = [obsf, obs(keys_aidx(keys_midx))];
+            end
+        end
+        obs_seq{i} = obsf;
+    end
+
     logger.resetBar;
     logger.writeLine("%d data blocks have been read successfully.", n-1);
     logger.writeLine("Recorded from %s to %s;", datetime(obs_seq{1}(1).Time), datetime(obs_seq{end}(1).Time));
