@@ -67,6 +67,7 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
     
     Gk = ones(M, 4);
     b = zeros(M, 1);
+    drhor = zeros(M, 1);
     for i = 1:M
         ps_i = ps(i, :);
         vi = vs(i, :);
@@ -74,10 +75,17 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
         dp_norm = norm(dp,'fro');
         los = dp./dp_norm; % Light of sight vector
         Gk(i, 1:3) = -los;
-        b(i, 1) = -dot(vi, los) + drho(i);
+        b(i) = -dot(vi, los) + drho(i);
     end
-    drhor = b;
     dx = Gk\b;
     vu = dx(1:3, 1)';
     ddtu = dx(4, 1);
+    for i = 1:M
+        ps_i = ps(i, :);
+        vi = vs(i, :);
+        dp = ps_i - pu;
+        dp_norm = norm(dp,'fro');
+        los = dp./dp_norm; % Light of sight vector
+        drhor(i) = -dot(vi - vu, los) - ddtu + drho(i);
+    end
 end

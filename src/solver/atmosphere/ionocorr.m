@@ -29,7 +29,7 @@ function [dions, rhos_corr, uobs] = ...
         case {'IF', 'IFLC', 'IONOFREE'}
             [rhos_corr, dions, uobs] = dualfreq(obs, uobs, eph_dict);
         case 'GIM'
-            ionpath = 'E:/Seafile/GNSS/gnss.workspace/ionstatistics/ionstatistics/ionstatistics_2023-2024_274-299.mat';
+            ionpath = 'E:/Seafile/GNSS/gnss.workspace/ionstatistics/ionstatistics/full_ion_stat_2023-2024_1-302.mat';
             [rhos_corr, dions] = gim2dions(ionpath, uobs, upvt);
         case {'N', 'NULL'}
             for k = 1:M
