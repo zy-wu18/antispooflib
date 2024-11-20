@@ -1,7 +1,7 @@
 clearvars *;
-addpath(genpath('utils\'));
-addpath(genpath('reader\'));
-addpath(genpath('solver\'));
+addpath(genpath('utils'));
+addpath(genpath('reader'));
+addpath(genpath('solver'));
 
 try
     %% Load observation

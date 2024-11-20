@@ -8,7 +8,7 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
 %           1xM     char    sys     satellite system of each obserable
 % return:   1x3     double  pu      [m], user position in ECEF
 %           1x3     double  vu      [m/s], user velocity in ECEF
-%           1xnsys  double  dtu   [s], user clock bias to all N systems
+%           1xnsys  double  dtu     [s], user clock bias @each invovled sys
 %           double          ddtu    [s/s], use clock drift
 %           1xM     double  rhor    [m], pseudorange residual
 %           1xM     double  drhor   [m/s], pseudorage rate residual
@@ -34,7 +34,7 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
     error_k = 1e5;                  % Position correction 
     iter_max = 100;                 % Iteration allowance
     iter_cnt = 0;
-    c = 299792458;                  % Speed of light in GPS
+    c = 299792458;                  % Speed of light
     OMGE = 7.2921151467e-5;
 
     % Geometry matrix
@@ -65,27 +65,19 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
     pu = pu_k;
     dtu  = dtu_k/c;
     
-    Gk = ones(M, 4);
     b = zeros(M, 1);
     drhor = zeros(M, 1);
     for i = 1:M
-        ps_i = ps(i, :);
-        vi = vs(i, :);
-        dp = ps_i - pu;
-        dp_norm = norm(dp,'fro');
-        los = dp./dp_norm; % Light of sight vector
-        Gk(i, 1:3) = -los;
-        b(i) = -dot(vi, los) + drho(i);
+        vs_i = vs(i, :);
+        los_i = -H(i, 1:3);
+        b(i) = -dot(vs_i, los_i) + drho(i);
     end
-    dx = Gk\b;
+    dx = H\b;
     vu = dx(1:3, 1)';
     ddtu = dx(4, 1);
     for i = 1:M
-        ps_i = ps(i, :);
-        vi = vs(i, :);
-        dp = ps_i - pu;
-        dp_norm = norm(dp,'fro');
-        los = dp./dp_norm; % Light of sight vector
-        drhor(i) = -dot(vi - vu, los) - ddtu + drho(i);
+        vs_i = vs(i, :);
+        los_i = -H(i, 1:3);
+        drhor(i) = -dot(vs_i - vu, los_i) - ddtu + drho(i);
     end
 end
