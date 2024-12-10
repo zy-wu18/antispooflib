@@ -1,17 +1,17 @@
 function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, sys)
 % estimate user position/velocity/clock bias & drift with pseudoranges
-% args  :   1xM     double  rho     [m], bias-fixed pseudorange observables
-%           1xM     double  drho    [m/s], bias-fixed pseudorange-rate observables
-%           3xM     double  ps      [m], satellite position in ECEF
-%           3xM     double  vs      [m/s], satellite velocity in ECEF
-%           1xM     double  dts     [s], satellite clock bias
-%           1xM     char    sys     satellite system of each obserable
+% args  :   Mx1     double  rho     [m], bias-fixed pseudorange observables
+%           Mx1     double  drho    [m/s], bias-fixed pseudorange-rate observables
+%           Mx3     double  ps      [m], satellite position in ECEF
+%           Mx3     double  vs      [m/s], satellite velocity in ECEF
+%           Mx1     double  dts     [s], satellite clock bias
+%           Mx1     char    sys     satellite system of each obserable
 % return:   1x3     double  pu      [m], user position in ECEF
 %           1x3     double  vu      [m/s], user velocity in ECEF
 %           1xnsys  double  dtu     [s], user clock bias @each invovled sys
 %           double          ddtu    [s/s], use clock drift
-%           1xM     double  rhor    [m], pseudorange residual
-%           1xM     double  drhor   [m/s], pseudorage rate residual
+%           Mx1     double  rhor    [m], pseudorange residual
+%           Mx1     double  drhor   [m/s], pseudorage rate residual
 %           Mx4     double  H       the positioning matrix
 
     sys(sys=='J') = 'G';            % QZSS is equivalent to GPS in solution
@@ -19,13 +19,23 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse4pnt(rho, drho, ps, vs, dts, s
     nsys = length(usys);            % number of systems involved
     N = 3 + nsys;                   % 3(position) + nsys(system-time-bias)
     M = length(rho);                % #Satellite used in PVT solution
+    
+    assert(isnumeric(rho) & iscolumn(rho));
+    assert(isnumeric(drho) & iscolumn(drho) & length(drho) == M);
+    assert(isnumeric(ps) & size(ps, 2) == 3 & size(ps, 1) == M);
+    assert(isnumeric(vs) & size(vs, 2) == 3 & size(vs, 1) == M);
+    assert(isnumeric(dts) & iscolumn(dts) & length(dts) == M);
+    assert(ischar(sys) & iscolumn(sys) & (length(sys) == M | length(sys) == 2*M));
+
     if(M < N)
         warning("Unsufficient observables, M=%d", M);
-        pu = zeros(1, 3) + NaN;
-        vu = zeros(1, 3) + NaN;
-        dtu = zeros(1, nsys) + NaN;  ddtu = NaN;
-        rhor = NaN; drhor = NaN;
-        H = zeros(M, 4) + NaN;
+        pu = nan(1, 3);
+        vu = nan(1, 3);
+        dtu = nan(1, nsys);
+        ddtu = nan;
+        rhor = nan; 
+        drhor = nan;
+        H = nan(M, 4);
         return;
     end
 

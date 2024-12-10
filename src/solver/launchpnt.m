@@ -80,7 +80,7 @@ function [upvt_seq, uobs_seq, asres_seq] = launchpnt(obs_seq, eph_dict, pntcfg, 
         end
         % PNT solver
         [pu, vu, dtu, ddtu] = ...
-            pntcfg.pntSolver(rhos', drhos', ps', vs', dts', cnrs', [uobs_seq{i}.Sys]);
+            pntcfg.pntSolver(rhos', drhos', ps', vs', dts', cnrs', [uobs_seq{i}.Sys]');
         upvt_seq(i).Pos = pu';
         upvt_seq(i).Vel = vu';
         if(isempty(uobs_seq{i}))

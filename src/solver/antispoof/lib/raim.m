@@ -26,7 +26,7 @@ function sdres = raim(rho, ps, dts, keys, cfg)
     if(isempty(keys))
         rhor = rho+nan;
     else
-        [~, ~, ~, ~, rhor, ~, ~] = lse4pnt(rho, rho+nan, ps, ps+nan, dts, keys(1,:));
+        [~, ~, ~, ~, rhor, ~, ~] = lse4pnt(rho, rho+nan, ps, ps+nan, dts, keys(1,:)');
     end
     persistent i; % thread counter
     persistent M_arr;

@@ -37,7 +37,11 @@ function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict
         end
         key = sprintf("%c%02d", o.Sys, o.PRN);
         kv = isKey(eph_dict, key); % key-validity
-        eph = eph_dict(key);
+        if(kv)
+            eph = eph_dict(key);
+        else
+            eph = [];
+        end
         c1 = kv && (eph.Health==0); % Ephemeris validity
         c2 = ~(isnan(o.Fd) || isnan(o.Rho)); % Both loop locked
         c3 = ~((j>1) && (o.Sys==oprev.Sys) && (o.PRN==oprev.PRN)); % Is first-ordered obs

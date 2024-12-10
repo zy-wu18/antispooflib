@@ -12,15 +12,19 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse7pnt(drho, ps, vs)
 %           Mx7 double  H       the positioning matrix
 
     M = length(drho);                % #Satellite used in PVT solution
+    assert(isnumeric(drho) & isrow(drho));
+    assert(isnumeric(ps) & size(ps, 1) == 3 & size(ps, 2) == M);
+    assert(isnumeric(vs) & size(vs, 1) == 3 & size(vs, 2) == M);
+    
     if(M < 7)
         warning("Unsufficient observables, M=%d", M);
-        pu = zeros(1, 3) + NaN;
-        vu = zeros(1, 3) + NaN;
-        dtu = 0.0;
-        ddtu = NaN;
-        rhor = zeros(1, M) + NaN;
-        drhor = zeros(1, M) + NaN;
-        H = zeros(M, 7) + NaN;
+        pu = nan(1, 3);
+        vu = nan(1, 3);
+        dtu = [];
+        ddtu = nan;
+        rhor = nan(1, M);
+        drhor = nan(1, M);
+        H = nan(M, 7);
         return;
     end
 
@@ -60,7 +64,7 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse7pnt(drho, ps, vs)
     
     pu = pu_k;
     vu = vu_k;
-    dtu = 0.0;
+    dtu = [];
     ddtu = ddtu_k/c;
     rhor = zeros(1, M) + NaN;
     drhor = b;
