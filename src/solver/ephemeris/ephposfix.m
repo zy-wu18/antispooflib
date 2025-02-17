@@ -1,7 +1,7 @@
 function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict, pntcfg, pu_ref)
 %EPHPOSFIX ephemeris positioning and measurement fix
 % args  :   1xM0 obs_t  obs_raw     a single raw observable frame
-%           dictionary  eph_dict    string->struct(neph_t, or geph_t) with
+%           struct		eph_dict    string->struct(neph_t, or geph_t) with
 %                                   key=sprintf("%c%02d", sys, prn)
 %           pntcfg_t    pntcfg      PNT configuration, include 
 %                                   elvMask([deg], default=0), <!TODO>
@@ -36,9 +36,9 @@ function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict
             onext = obs_raw(j+1);
         end
         key = sprintf("%c%02d", o.Sys, o.PRN);
-        kv = isKey(eph_dict, key); % key-validity
+        kv = isfield(eph_dict, key); % key-validity
         if(kv)
-            eph = eph_dict(key);
+            eph = eph_dict.(key);
         else
             eph = [];
         end
@@ -71,7 +71,7 @@ function [ps, vs, dts, rhos, drhos, cnrs, obs_pvt] = ephposfix(obs_raw, eph_dict
     for j = 1:M
         o = obs_pvt(j);
         key = sprintf("%c%02d", o.Sys, o.PRN);
-        eph = eph_dict(key);
+        eph = eph_dict.(key);
         tsv = o.ObsTime - o.Rho/c; % transmit time = tlatch - rho/c
         tsv = tsv - eph2clk(tsv, eph);
         [ps(:, j), vs(:, j), dts(j)] = eph2pvt(tsv, eph);

@@ -1,20 +1,20 @@
 function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse7pnt(drho, ps, vs)
 % estimate user position/velocity & clock drift with pseudorange rates
-% args  :   1xM double  drho    [m/s], bias-fixed pseudorange-rate observables
-%           3xM double  ps      [m], satellite position in ECEF
-%           3xM double  vs      [m/s], satellite velocity in ECEF
+% args  :   Mx1 double  drho    [m/s], bias-fixed pseudorange-rate observables
+%           Mx3 double  ps      [m], satellite position in ECEF
+%           Mx3 double  vs      [m/s], satellite velocity in ECEF
 % return:   1x3 double  pu      [m], user position in ECEF
 %           1x3 double  vu      [m/s], user velocity in ECEF
 %           double      dtu     (reserved)[s], always 0
 %           double      ddtu    [s/s], use clock drift
-%           1xM double  rhor    [m], pseudorange residual
-%           1xM double  drhor   [m/s], pseudorage rate residual
+%           Mx1 double  rhor    [m], pseudorange residual
+%           Mx1 double  drhor   [m/s], pseudorage rate residual
 %           Mx7 double  H       the positioning matrix
 
     M = length(drho);                % #Satellite used in PVT solution
-    assert(isnumeric(drho) & isrow(drho));
-    assert(isnumeric(ps) & size(ps, 1) == 3 & size(ps, 2) == M);
-    assert(isnumeric(vs) & size(vs, 1) == 3 & size(vs, 2) == M);
+    assert(isnumeric(drho) & iscolumn(drho));
+    assert(isnumeric(ps) & size(ps, 2) == 3 & size(ps, 1) == M);
+    assert(isnumeric(vs) & size(vs, 2) == 3 & size(vs, 1) == M);
     
     if(M < 7)
         warning("Unsufficient observables, M=%d", M);
@@ -22,8 +22,8 @@ function [pu, vu, dtu, ddtu, rhor, drhor, H] = lse7pnt(drho, ps, vs)
         vu = nan(1, 3);
         dtu = [];
         ddtu = nan;
-        rhor = nan(1, M);
-        drhor = nan(1, M);
+        rhor = nan(M, 1);
+        drhor = nan(M, 1);
         H = nan(M, 7);
         return;
     end

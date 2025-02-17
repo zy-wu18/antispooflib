@@ -49,8 +49,8 @@ A = zeros(1, M);
 x = zeros(1, M);
 
 for m = 1:M
-    alpha = eph_dict(['iono_', uobs(1).Sys]).alpha;
-    beta = eph_dict(['iono_', uobs(1).Sys]).beta;
+    alpha = eph_dict.(['iono_', uobs(1).Sys]).alpha;
+    beta = eph_dict.(['iono_', uobs(1).Sys]).beta;
     B(m) = (PHI_m(m).^(0:3)) * beta;
     if(B(m) < 72000)
         B(m) = 72000;
@@ -68,8 +68,8 @@ rhos_K = [uobs.Rho] - c*dIon;
 % TGD correction
 for k = 1:M
     key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
-    if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))
-        TGD = eph_dict(key).TGD;
+    if(isfield(eph_dict, key) && ~isempty(eph_dict.(key).TGD))
+        TGD = eph_dict.(key).TGD;
         rhos_K(k) = rhos_K(k) - c*TGD(1);
     end
 end 

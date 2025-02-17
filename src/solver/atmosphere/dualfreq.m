@@ -3,7 +3,7 @@ function [rhosIF, dions, uobs] = dualfreq(obs, uobs, eph_dict)
 % args  :   1x2M obs_t  obs         observation, both 2nd frequency and
 %                                   filtered ones included
 %           1xM  obs_t  uobs        used observation, only main(1st) ones 
-%           dictionary  eph_dict    ephemeris data struct
+%           struct		eph_dict    ephemeris data struct
 % return:   Mx1 double  dIons       [s], ionospheric delay
 %           1xM double  rhos_IF     [m], satellite pseodoranges
 
@@ -47,7 +47,7 @@ for m = 1:M
             dions(1, m) = (rhos2(m) - rhos1(m)) / (gamma - 1);
             dions(2, m) = gamma* (rhos2(m) - rhos1(m)) / (gamma - 1);
         case 'C'
-            TGD = eph_dict(sprintf("%c%02d", uobs(m).Sys, uobs(m).PRN)).TGD;
+            TGD = eph_dict.(sprintf("%c%02d", uobs(m).Sys, uobs(m).PRN)).TGD;
             gamma = (obs1(m).Fc/obs2(m).Fc)^2;
             rhos1(m) = rhos1(m) - c*TGD(1);
             rhosIF(m) = (rhos2(m) - gamma * rhos1(m)) / (1 - gamma);

@@ -34,8 +34,8 @@ function [dions, rhos_corr, uobs] = ...
         case {'N', 'NULL'}
             for k = 1:M
                 key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
-                if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))
-                    TGD = eph_dict(key).TGD;
+                if(isfield(eph_dict, key) && ~isempty(eph_dict.(key).TGD))
+                    TGD = eph_dict.(key).TGD;
                     rhos_corr(k) = rhos(k) - c*TGD(1);
                 else
                     rhos_corr(k) = rhos(k);
@@ -44,8 +44,8 @@ function [dions, rhos_corr, uobs] = ...
         otherwise
             for k = 1:M
                 key = sprintf("%c%02d", uobs(k).Sys, uobs(k).PRN);
-                if(eph_dict.isKey(key) && ~isempty(eph_dict(key).TGD))
-                    TGD = eph_dict(key).TGD;
+                if(isfield(eph_dict, key) && ~isempty(eph_dict(key).TGD))
+                    TGD = eph_dict.(key).TGD;
                     rhos_corr(k) = rhos(k) - c*TGD(1);
                 else
                     rhos_corr(k) = rhos(k);

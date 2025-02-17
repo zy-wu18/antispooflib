@@ -2,7 +2,7 @@ function eph_dict = readnav(fname, t)
 % READOBS: yield ephemeris in <fname> nearest to datetime <t>
 % args  :   string      fname   full path the RINEX 3.04 navigation data file
 %           datetime    t       query UTC time
-% return:   dictionary  eph     1x3 char -> neph_t or geph_t
+% return:   struct		eph     1x3 char -> neph_t or geph_t
 % notes :   readrnx304 trys to gather all the ephemeris in <fname> whose
 %           UTC time is close enough with <t>.
 %           The closest epheremis of each satellite(e.g. 'G01') can be 
@@ -31,7 +31,7 @@ function eph_dict = readnav(fname, t)
     
     %% Skip header && Read Alpha & Beta
     alpha_beta = zeros(4, 2);
-    eph_dict = dictionary();
+    eph_dict = struct();
 
     line = fgetl(fid);
     l = 1;
@@ -45,25 +45,25 @@ function eph_dict = readnav(fname, t)
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'GPSB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_G") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict.iono_G = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         case 'GAL'
                             alpha_beta(1:3, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_E") = struct('GAL_corr', alpha_beta(1:3, 1));
+                            eph_dict.iono_E = struct('GAL_corr', alpha_beta(1:3, 1));
                         case 'BDSA'
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'BDSB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_C") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict.iono_C = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         case 'QZSA'
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'QZSB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_J") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict.iono_J = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         case 'IRNA'
                             alpha_beta(:, 1) = sscanf(replace(line(6:end), "D", "e"), "%lf");
                         case 'IRNB'
                             alpha_beta(:, 2) = sscanf(replace(line(6:end), "D", "e"), "%lf");
-                            eph_dict("iono_R") = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
+                            eph_dict.iono_R = struct('alpha', alpha_beta(:, 1), 'beta', alpha_beta(:, 2));
                         otherwise
                     end
                 end
@@ -224,25 +224,26 @@ function eph_dict = readnav(fname, t)
             eph_tmp.age = v(4);
         end
         key = sprintf("%c%02d", eph_tmp.sys, eph_tmp.PRN);
-        eph_dict(key) = eph_tmp;
+        eph_dict.(key) = eph_tmp;
         num_sys_last = num_sys;
-        num_sys = arrayfun(@(sys)sum(startsWith(eph_dict.keys, sys)), 'GCJSER')';
+        num_sys = arrayfun(@(sys)sum(startsWith(fieldnames(eph_dict), sys)), 'GCJSER')';
         if(mod(sum(num_sys), 10) == 0 && any(num_sys_last ~= num_sys))
             logger.refreshTable(num_sys);
         end
     end
     fclose(fid);
     logger.deStack();
-    assert(eph_dict.numEntries > 0, 'readrnx304:InvalidEph', ...
-        sprintf("Ephemeris invalid:\n  nav time = %s;\n  obs time = %s.\n", eph_tmp.Toc_cal, t));
+    assert(~isempty(fieldnames(eph_dict)), 'readnav:InvalidEph', ...
+        sprintf("Ephemeris invalid:\n  nav time = %s;\n  obs time = %s.\n", ...
+		eph_tmp.Toc_cal, t));
 
     logger.enStack("readrnx304 report:");
     for sys = ['G', 'C', 'J', 'S', 'E', 'R']
-        num_sys = sum(startsWith(eph_dict.keys, sys));
+        num_sys = sum(startsWith(fieldnames(eph_dict), sys));
         if(num_sys > 0)
             logger.writeLine("%c: %d ephemeris valid.", sys, num_sys);
         end
     end
-    logger.deStack("Number of valid emphemeris: %d.", eph_dict.numEntries);
+    logger.deStack("Number of valid emphemeris: %d.", length(fieldnames(eph_dict)));
     logger.deStack("readnav finished.\n");
 end
